@@ -1,0 +1,42 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Canonical category mappings and CID defaults for host selection.
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+categories:
+  device_types:
+    name: "Device Types"
+    groups:
+    - cisco_switches
+    - cisco_routers
+    - arista_switches
+    - vyos_routers
+    - pfsense_firewalls
+    - windows_servers
+    - linux_servers
+    - docker_hosts
+    - k8s_pods
+    - nas_storage
+    - prometheus_servers
+    - grafana_servers
+
+  infrastructure:
+    name: "Infrastructure"
+    groups:
+    - containers
+    - routers
+    - switches
+    - servers
+
+  locations:
+    name: "Sites"
+    groups:
+    - Tokyo
+    - Lagos
+
+# Correlation ID defaults (logging-only; does not affect inventory)
+host_selector_use_cid: true
+host_selector_inherited_cid: "{{ correlation_id | default(egf_correlation_id | default('', true), true) | lower }}"
+host_selector_env_cid: "{{ lookup('env', 'EGF_CORR_ID') | default('', true) | lower }}"
+host_selector_cid_pre: "{{ host_selector_inherited_cid or host_selector_env_cid }}"

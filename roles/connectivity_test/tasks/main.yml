@@ -1,0 +1,14 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Orchestrate connectivity tests, result compilation, and central persistence
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+- name: Execute connectivity tests (per host)
+  ansible.builtin.include_tasks: run_tests.yml
+
+- name: Compile test results (per host)
+  ansible.builtin.include_tasks: compile_results.yml
+
+- name: Save results centrally and publish run metadata
+  ansible.builtin.include_tasks: save_results.yml

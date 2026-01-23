@@ -1,0 +1,74 @@
+# purpose: Environment guard defaults (paths, environment profiles, audit settings)
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+# Resolve project root for both CI playbooks and direct role usage
+_project_root: >-
+  {{
+    playbook_dir
+    | regex_replace('/deployment/ci/playbooks.*$', '')
+    | regex_replace('/common/playbooks.*$', '')
+    | regex_replace('/roles/.*$', '')
+  }}
+
+env_guard:
+  version: "2.1.2"
+
+  paths:
+    project_root: "{{ _project_root }}"
+    logs_dir: "{{ _project_root }}/output/logs/ansible"
+    env_guard_logs_dir: "{{ _project_root }}/output/logs/ansible/env_guard_logs"
+
+  environments:
+    dev: &dev_base
+      risk_level: 1
+      approval_required: false
+      monitoring_level: basic
+      deployment_window: always
+      health_check_timeout: 30
+    staging:
+      <<: *dev_base
+      risk_level: 5
+      monitoring_level: standard
+      deployment_window: business_hours
+      health_check_timeout: 60
+    prod:
+      <<: *dev_base
+      risk_level: 10
+      approval_required: true
+      monitoring_level: comprehensive
+      deployment_window: maintenance_window
+      health_check_timeout: 120
+
+  security:
+    rbac:
+      enabled: true
+      homelab_admin: []
+
+  deployment:
+    windows:
+      always:
+        days: [ monday, tuesday, wednesday, thursday, friday, saturday, sunday ]
+        hours: { start: "00:00", end: "23:59" }
+      business_hours:
+        days: [ monday, tuesday, wednesday, thursday, friday ]
+        hours: { start: "09:00", end: "17:00" }
+      maintenance_window:
+        days: [ saturday, sunday ]
+        hours: { start: "10:00", end: "16:00" }
+
+  observability:
+    logging:
+      audit_path: "{{ _project_root }}/output/logs/ansible/env_guard_logs/env_guard_audit.log"
+      structured: true
+
+  audit:
+    enabled: true
+    log_file: "env_guard_audit.log"
+    report_prefix: "env_guard_report"
+    retention_days: 90
+    correlation_in_filenames: true
+
+_legacy_environment_mapping:
+  production: prod
+  live: prod

@@ -1,0 +1,19 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Smoke-test connectivity_test role against cicd_test inventory
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+- name: Connectivity validation against cicd_test
+  hosts: cicd_test
+  gather_facts: false
+
+  vars:
+    show_test_targets: true # test override; rest comes from role defaults
+    ping_count: 1
+    connectivity_timeout: 3
+
+  roles:
+  # Important: short name only – resolved via ANSIBLE_ROLES_PATH
+  - role: hybridops.common.connectivity_test
+    tags: [ smoke ]

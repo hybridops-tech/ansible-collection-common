@@ -1,0 +1,82 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Environment guard audit trail and report generation
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+- name: Ensure audit log directory exists
+  ansible.builtin.file:
+    path: "{{ env_guard.paths.env_guard_logs_dir }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+
+- name: Shorten correlation ID for filenames
+  ansible.builtin.set_fact:
+    env_guard_cid8: >-
+      {{ (env_guard_correlation_id | default('') | regex_replace('[^0-9a-zA-Z]', ''))[0:8] }}
+  delegate_to: localhost
+
+- name: Compute run id (UTC)
+  ansible.builtin.set_fact:
+    env_guard_run_id: "{{ lookup('ansible.builtin.pipe', 'date -u +%Y%m%dT%H%M%SZ') }}"
+  delegate_to: localhost
+
+- name: Define run folder
+  ansible.builtin.set_fact:
+    env_guard_run_dir: "{{ env_guard.paths.env_guard_logs_dir }}/{{ env_guard_run_id }}"
+  delegate_to: localhost
+
+- name: Define report name
+  ansible.builtin.set_fact:
+    env_guard_report_name: "{{ env_guard.audit.report_prefix }}_{{ env_guard_run_id }}_{{ env_guard_cid8 }}.md"
+  delegate_to: localhost
+
+- name: Ensure run folder exists
+  ansible.builtin.file:
+    path: "{{ env_guard_run_dir }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+
+- name: Write audit log entry
+  ansible.builtin.lineinfile:
+    path: "{{ env_guard_run_dir }}/{{ env_guard.audit.log_file }}"
+    line: >-
+      {{ env_guard_timestamp | default('unknown') }} {{ env_guard_correlation_id | default('n/a') }} {{ env_guard_user | default('unknown') }} {{ (validated_env | default(env | default('na'), true)) | upper }} APPROVED risk={{ env_guard_risk_score | default('n/a') }} hosts={{ target_host_count | default('n/a') }} justification="{{ deployment_justification | default('n/a') }}"
+    create: true
+    mode: "0644"
+  delegate_to: localhost
+
+- name: Generate validation report
+  ansible.builtin.copy:
+    content: |
+      # Environment Guard Validation Report
+
+      **Environment:** {{ validated_env | default(env | default('na'), true) }}
+      **Risk:** {{ env_guard_risk_score | default('n/a') }}/10
+      **Status:** APPROVED
+      **User:** {{ env_guard_user | default('unknown') }}
+      **Date:** {{ env_guard_timestamp | default('unknown') }}
+      **Correlation ID:** {{ env_guard_correlation_id | default('n/a') }}
+      **Justification:** {{ deployment_justification | default('n/a') }}
+    dest: "{{ env_guard_run_dir }}/{{ env_guard_report_name }}"
+    mode: "0644"
+  delegate_to: localhost
+
+- name: Update latest symlink (POSIX)
+  ansible.builtin.file:
+    src: "{{ env_guard_run_dir }}"
+    path: "{{ env_guard.paths.env_guard_logs_dir }}/latest"
+    state: link
+    force: true
+  when: (ansible_system | default('Linux')) != "Windows"
+  delegate_to: localhost
+
+- name: Update latest marker file (Windows)
+  ansible.builtin.copy:
+    content: "{{ env_guard_run_dir }}\n"
+    dest: "{{ env_guard.paths.env_guard_logs_dir }}/LATEST_RUN_PATH.txt"
+    mode: "0644"
+  when: (ansible_system | default('Linux')) == "Windows"
+  delegate_to: localhost

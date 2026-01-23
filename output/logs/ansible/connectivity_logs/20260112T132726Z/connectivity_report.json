@@ -1,0 +1,19 @@
+{
+    "generic-linux": {
+        "cid": "",
+        "env": "na",
+        "hostname": "generic-linux",
+        "http": false,
+        "http_head": false,
+        "https": false,
+        "https_head": false,
+        "icmp": false,
+        "inventory_group": "cicd_test",
+        "ip": "10.10.0.141",
+        "os_family": "Debian",
+        "ssh": false,
+        "telnet": true,
+        "tested_by": "user",
+        "ts_utc": "2026-01-12T13:27:09Z"
+    }
+}

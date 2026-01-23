@@ -1,0 +1,30 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Test environment configuration for ip_mapper role
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+environments:
+  dev:
+    cisco_routers:
+    - { name: test-router-01, ip: 192.168.1.1 }
+    cisco_switches:
+    - { name: test-switch-01, ip: 192.168.1.10 }
+    linux_servers:
+    - { name: test-server-01, ip: 192.168.1.20 }
+
+  staging:
+    cisco_routers:
+    - { name: test-router-01, ip: 10.0.1.1 }
+    cisco_switches:
+    - { name: test-switch-01, ip: 10.0.1.10 }
+    linux_servers:
+    - { name: test-server-01, ip: 10.0.1.20 }
+
+  prod:
+    cisco_routers:
+    - { name: test-router-01, ip: 172.16.1.1 }
+    cisco_switches:
+    - { name: test-switch-01, ip: 172.16.1.10 }
+    linux_servers:
+    - { name: test-server-01, ip: 172.16.1.11 }

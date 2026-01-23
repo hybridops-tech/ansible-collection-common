@@ -1,0 +1,6 @@
+# purpose: Collection dependencies (pinned)
+# maintainer: HybridOps.Studio
+
+roles:
+- name: geerlingguy.postgresql
+  version: "4.0.2"

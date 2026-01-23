@@ -1,0 +1,31 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Argument validation for dynamic inventory generation role
+# maintainer: HybridOps.Studio
+
+- name: Load role argument specifications
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/meta/argument_specs.yml"
+    name: _role_meta
+  delegate_to: localhost
+  run_once: true
+
+- name: Build provided arguments map
+  ansible.builtin.set_fact:
+    _provided_args:
+      env: "{{ env | default(omit) }}"
+      project_root: "{{ project_root | default(omit) }}"
+      inventories_dir_name: "{{ inventories_dir_name | default(omit) }}"
+      ip_data_filename: "{{ ip_data_filename | default(omit) }}"
+      placeholder_ip: "{{ placeholder_ip | default(omit) }}"
+      test_output_dir: "{{ test_output_dir | default(omit) }}"
+  delegate_to: localhost
+  run_once: true
+
+- name: Validate arguments against specification
+  ansible.builtin.validate_argument_spec:
+    name: "main - Generate environment-specific Ansible inventory"
+    argument_spec: "{{ _role_meta.argument_specs.main.options }}"
+    provided_arguments: "{{ _provided_args }}"
+  delegate_to: localhost
+  run_once: true

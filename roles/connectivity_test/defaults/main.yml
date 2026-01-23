@@ -1,0 +1,56 @@
+---
+# purpose: Connectivity test defaults (ICMP/HTTP knobs and log locations)
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+# Resolve project root for both CI playbooks and direct role usage
+_project_root: >-
+  {{
+    playbook_dir
+    | regex_replace('/deployment/ci/playbooks.*$', '')
+    | regex_replace('/common/playbooks.*$', '')
+    | regex_replace('/roles/.*$', '')
+  }}
+
+ping_count: 2
+connectivity_timeout: 3
+show_test_targets: false
+
+ports:
+  ssh: 22
+  telnet: 23
+  http: 80
+  https: 443
+
+tests_enabled:
+  icmp: true
+  ssh: true
+  telnet: false
+  http: true
+  http_head: false
+  https: true
+  https_head: false
+
+connectivity:
+  paths:
+    project_root: "{{ _project_root }}"
+    logs_dir: "{{ _project_root }}/output/logs/ansible"
+    connectivity_logs_dir: "{{ _project_root }}/output/logs/ansible/connectivity_logs"
+  audit:
+    report_prefix: "connectivity_report"
+    json_file: "connectivity_report.json"
+    jsonl_file: "connectivity_report.jsonl"
+    write_json: true
+    write_jsonl: true
+    correlation_in_filenames: false
+
+# Back-compat (retained for older writers)
+log_directory: "logs"
+report_filename: "connectivity_report.json"
+csv_filename: "connectivity_report.csv"
+jsonl_filename: "connectivity_report.jsonl"
+
+connectivity_use_cid: true
+connectivity_inherited_cid: "{{ correlation_id | default(egf_correlation_id | default('', true), true) | lower }}"
+connectivity_env_cid: "{{ lookup('env','EGF_CORR_ID') | default('', true) | lower }}"
+connectivity_cid_pre: "{{ connectivity_inherited_cid or connectivity_env_cid }}"

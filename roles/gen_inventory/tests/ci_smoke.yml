@@ -1,0 +1,35 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Smoke test for gen_inventory role (CI-safe, non-interactive)
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+- name: Smoke test gen_inventory
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    env: "{{ env | default('cicd-test') }}"
+
+  tasks:
+  - name: Assert env is provided
+    ansible.builtin.assert:
+      that:
+      - (env | string | trim | length) > 0
+      fail_msg: "env is required (e.g., -e env=dev)."
+
+  - name: Run gen_inventory role
+    ansible.builtin.include_role:
+      name: common/gen_inventory
+
+  - name: Assert inventory file exists
+    ansible.builtin.stat:
+      path: "{{ inventory_file }}"
+    register: _inv
+
+  - name: Fail if inventory file is missing
+    ansible.builtin.assert:
+      that:
+      - _inv.stat.exists | bool
+      fail_msg: "Inventory file not generated at {{ inventory_file }}"

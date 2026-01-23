@@ -1,0 +1,280 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Environment guard framework (selection, risk checks, approvals, audit)
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+- name: Ensure facts are available for env_guard
+  ansible.builtin.setup:
+  when: ansible_date_time is not defined
+
+- name: Generate correlation ID (UUID)
+  ansible.builtin.set_fact:
+    env_guard_correlation_id: >-
+      {{ env_guard_correlation_id
+         | default(lookup('ansible.builtin.pipe', 'uuidgen') | lower, true) }}
+  run_once: true
+  delegate_to: localhost
+
+- name: Fallback correlation ID if uuidgen is unavailable
+  ansible.builtin.set_fact:
+    env_guard_correlation_id: >-
+      envguard-{{ ansible_date_time.epoch }}-{{ lookup('ansible.builtin.password', '/dev/null', length=12, chars='hex') }}
+  when: env_guard_correlation_id is not defined
+  run_once: true
+  delegate_to: localhost
+
+- name: Seed env from CI (HOS_ENV) when not explicitly set
+  ansible.builtin.set_fact:
+    env: "{{ lookup('ansible.builtin.env', 'HOS_ENV') | default('dev', true) | lower }}"
+  when: "'env' not in vars"
+
+- name: Set framework constants
+  ansible.builtin.set_fact:
+    _guard_user: "{{ ansible_user_id | default('automation') }}"
+    _guard_timestamp: "{{ ansible_date_time.iso8601 }}"
+    _guard_version: "2.1.2"
+    _separator: "----------------------------------------------------------------"
+
+- name: Determine env_guard mode
+  ansible.builtin.set_fact:
+    _guard_mode: >-
+      {{
+        'non-interactive (env from vars/CI)'
+        if 'env' in vars
+        else 'interactive environment selection'
+      }}
+
+- name: Environment guard framework starting
+  ansible.builtin.debug:
+    msg: |
+      ENVIRONMENT GUARD v{{ _guard_version }}
+      Timestamp: {{ _guard_timestamp }}
+      User: {{ _guard_user }}
+      Mode: {{ _guard_mode }}
+      Status: starting validation
+
+- name: Interactive environment selection
+  ansible.builtin.pause:
+    prompt: |
+      ENVIRONMENT SELECTION
+      {{ _separator }}
+      Available deployment environments:
+
+      dev
+        Risk:      {{ env_guard.environments.dev.risk_level }}/10
+        Approval:  {{ 'Manual required' if env_guard.environments.dev.approval_required else 'Auto-approved' }}
+        Window:    {{ env_guard.environments.dev.deployment_window | replace('_',' ') | title }}
+        Impact:    Development systems
+
+      staging
+        Risk:      {{ env_guard.environments.staging.risk_level }}/10
+        Approval:  {{ 'Manual required' if env_guard.environments.staging.approval_required else 'Auto-approved' }}
+        Window:    {{ env_guard.environments.staging.deployment_window | replace('_',' ') | title }}
+        Impact:    Pre-production validation
+
+      prod
+        Risk:      {{ env_guard.environments.prod.risk_level }}/10
+        Approval:  {{ 'Manual required' if env_guard.environments.prod.approval_required else 'Auto-approved' }}
+        Window:    {{ env_guard.environments.prod.deployment_window | replace('_',' ') | title }}
+        Impact:    Production workloads
+
+      Enter environment (dev/staging/prod) [default: dev]:
+  register: environment_selection
+  when: env is not defined or (env | default('') | length == 0)
+
+- name: Set environment from user input or variable
+  ansible.builtin.set_fact:
+    env: "{{ environment_selection.user_input | default(env) | default('dev') }}"
+
+- name: Normalise legacy 'production' input
+  ansible.builtin.set_fact:
+    env: "prod"
+  when: env == "production"
+
+- name: Fail if environment is invalid
+  ansible.builtin.fail:
+    msg: |
+      Environment guard: deployment blocked.
+      {{ _separator }}
+      Invalid environment: {{ env }}
+      Valid environments: dev, staging, prod.
+  when: env not in ["dev", "staging", "prod"]
+
+- name: Calculate deployment risk
+  ansible.builtin.set_fact:
+    current_env_config: "{{ env_guard.environments[env] }}"
+    risk_score: "{{ env_guard.environments[env].risk_level }}"
+    requires_approval: "{{ env_guard.environments[env].approval_required }}"
+    target_host_count: "{{ ansible_play_hosts | length }}"
+    env_upper: "{{ env | upper }}"
+
+- name: Check deployment timing for higher-risk environments
+  block:
+  - name: Capture current time components
+    ansible.builtin.set_fact:
+      current_weekday: "{{ ansible_date_time.weekday }}"
+      current_hour: "{{ ansible_date_time.hour | int }}"
+      weekday_names:
+      - Monday
+      - Tuesday
+      - Wednesday
+      - Thursday
+      - Friday
+      - Saturday
+      - Sunday
+
+  - name: Calculate derived time values
+    ansible.builtin.set_fact:
+      current_day_name: "{{ weekday_names[current_weekday | int] }}"
+      is_weekend: "{{ (current_weekday | int) >= 5 }}"
+
+  - name: Calculate maintenance window status
+    ansible.builtin.set_fact:
+      in_maintenance_window: >-
+        {{ is_weekend and (current_hour >= 10 and current_hour <= 16) }}
+
+  - name: Deployment timing summary
+    ansible.builtin.debug:
+      msg: |
+        DEPLOYMENT TIMING
+        {{ _separator }}
+        Current time (UTC): {{ current_day_name }} {{ ansible_date_time.hour }}:{{ ansible_date_time.minute }}
+        Environment:        {{ env_upper }}
+        Preferred window:   {{ current_env_config.deployment_window }}
+        Weekend:            {{ 'Yes' if is_weekend else 'No' }}
+        In window:          {{ 'Yes' if (env != 'prod' or in_maintenance_window) else 'No' }}
+        {% if env == 'prod' and not in_maintenance_window %}
+        Note: production changes are recommended during weekend maintenance windows (10:00–16:00 UTC).
+        {% endif %}
+        {{ _separator }}
+  when: env in ["staging", "prod"]
+
+- name: Production deployment summary
+  ansible.builtin.debug:
+    msg: |
+      PRODUCTION DEPLOYMENT
+      {{ _separator }}
+      Environment:   {{ env_upper }}
+      Risk level:    {{ risk_score }}/10
+      Target hosts:  {{ target_host_count }}
+      User:          {{ _guard_user }}
+      Time:          {{ _guard_timestamp }}
+      Monitoring:    {{ current_env_config.monitoring_level | upper }}
+      Maintenance window active: {{ 'Yes' if in_maintenance_window | default(false) else 'No' }}
+      {{ _separator }}
+  when: env == "prod"
+
+- name: Capture production deployment justification
+  ansible.builtin.pause:
+    prompt: |
+      PRODUCTION JUSTIFICATION
+      {{ _separator }}
+      Environment:  {{ env_upper }}
+      Risk level:   {{ risk_score }}/10
+      Target hosts: {{ target_host_count }}
+      User:         {{ _guard_user }}
+
+      Provide a short justification for this production deployment
+      (for example "Security update", "Incident fix", "Planned release"):
+  register: production_justification
+  when: requires_approval | bool
+
+- name: Confirm production deployment
+  ansible.builtin.pause:
+    prompt: |
+      PRODUCTION APPROVAL
+      {{ _separator }}
+      Environment:   {{ env_upper }}
+      Risk level:    {{ risk_score }}/10
+      Target hosts:  {{ target_host_count }}
+      User:          {{ _guard_user }}
+      Time:          {{ _guard_timestamp }}
+      Justification: {{ production_justification.user_input | default('Not provided') }}
+
+      To proceed, type: DEPLOY
+  register: production_approval
+  when: requires_approval | bool
+
+- name: Abort when production deployment is not approved
+  ansible.builtin.fail:
+    msg: |
+      Production deployment cancelled.
+      {{ _separator }}
+      Confirmation received: {{ production_approval.user_input | default('none') }}
+      Expected:              DEPLOY
+      Justification:         {{ production_justification.user_input | default('Not provided') }}
+      Correlation ID:        {{ env_guard_correlation_id }}
+  when:
+  - requires_approval | bool
+  - production_approval is defined
+  - production_approval.user_input != "DEPLOY"
+
+- name: Environment guard validation complete
+  ansible.builtin.debug:
+    msg: |
+      ENVIRONMENT GUARD: DEPLOYMENT APPROVED
+      {{ _separator }}
+      Time: {{ _guard_timestamp }}
+      Environment: {{ env_upper }} ({{ current_env_config.monitoring_level }} monitoring)
+      Risk level: {{ risk_score }}/10
+      User: {{ _guard_user }}
+      Target hosts: {{ target_host_count }} hosts
+      Monitoring: {{ current_env_config.monitoring_level | upper }}
+      {% if production_justification is defined
+           and production_justification.user_input is defined
+           and production_justification.user_input %}
+      Justification: {{ production_justification.user_input }}
+      {% endif %}
+      Status: DEPLOYMENT AUTHORIZED
+      {{ _separator }}
+      Proceeding with deployment...
+
+- name: Set framework variables for other roles
+  ansible.builtin.set_fact:
+    validated_env: "{{ env }}"
+    environment_type: "{{ current_env_config.monitoring_level }} monitoring"
+    env_guard_risk_score: "{{ risk_score }}"
+    env_guard_correlation_id: "{{ env_guard_correlation_id }}"
+    env_guard_version: "{{ _guard_version }}"
+    env_guard_timestamp: "{{ _guard_timestamp }}"
+    env_guard_user: "{{ _guard_user }}"
+    env_monitoring_level: "{{ current_env_config.monitoring_level }}"
+    env_deployment_window: "{{ current_env_config.deployment_window }}"
+    deployment_justification: >-
+      {{
+        production_justification.user_input
+        if (production_justification is defined
+            and production_justification.user_input is defined
+            and production_justification.user_input | length > 0)
+        else 'Standard deployment'
+      }}
+    deployment_window_check: "{{ in_maintenance_window | default(true) }}"
+    _final_status: "approved"
+    env_guard_passed: true
+    egf_correlation_id: "{{ egf_correlation_id | default(env_guard_correlation_id) }}"
+    correlation_id: "{{ correlation_id | default(env_guard_correlation_id) }}"
+
+- name: Publish values for external consumers
+  ansible.builtin.set_stats:
+    data:
+      env_guard_correlation_id: "{{ env_guard_correlation_id }}"
+      env_guard_audit_log_file: "{{ env_guard.audit.log_file }}"
+      env_guard_report_prefix: "{{ env_guard.audit.report_prefix }}"
+
+- name: Generate audit trail and reports
+  ansible.builtin.include_tasks: audit_logging.yml
+
+- name: Environment guard framework complete
+  ansible.builtin.debug:
+    msg: |
+      ENVIRONMENT GUARD FRAMEWORK COMPLETE
+      Status: validation passed
+      Environment: {{ env_upper }}
+      Risk assessment: {{ env_guard_risk_score }}/10
+      Framework version: v{{ env_guard_version }}
+      Correlation ID: {{ env_guard_correlation_id }}
+      User: {{ env_guard_user }}
+      Timestamp: {{ env_guard_timestamp }}
+      Audit log directory: {{ env_guard.paths.env_guard_logs_dir }}
+      Ready for next role in deployment pipeline

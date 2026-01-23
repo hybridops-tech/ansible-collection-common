@@ -1,0 +1,42 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Smoke-test ip_mapper role; validate mapping and CID logging for a selected environment.
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+- name: Test IP Mapper Role
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars_prompt:
+  - name: validated_env
+    prompt: "Enter validated environment (dev/staging/prod)"
+    private: no
+    default: dev
+
+  vars:
+    correlation_id: test-ip-mapper-001
+
+  pre_tasks:
+  - name: Normalize environment key
+    set_fact:
+      validated_env: "{{ validated_env | lower }}"
+
+  - name: Validate environment choice
+    assert:
+      that:
+      - validated_env in ['dev', 'staging', 'prod'] # expand if you add more in tests
+      fail_msg: "Invalid environment '{{ validated_env }}'. Must be dev, staging, or prod."
+
+  roles:
+  - role: ../../
+
+  post_tasks:
+  - name: Verify IP mapping
+    assert:
+      that:
+      - ansible_host is defined
+      - ansible_host != "XX.XX.XX.00"
+      success_msg: "{{ inventory_hostname }} mapped to {{ ansible_host }}"
+      fail_msg: "{{ inventory_hostname }} mapping failed"

@@ -1,0 +1,29 @@
+---
+# SPDX-License-Identifier: MIT-0
+# purpose: Validate IP mapping results and enforce audit traceability using correlation ID (CID).
+# adr: ADR-0600-environment-guard-framework
+# maintainer: HybridOps.Studio
+
+- name: Identify unmapped hosts
+  set_fact:
+    unmapped_hosts: >-
+      {{
+        working_targets
+        | select('in', groups['all'])
+        | map('extract', hostvars)
+        | selectattr('ansible_host', 'undefined')
+        | map(attribute='inventory_hostname')
+        | list
+      }}
+
+- name: Report unmapped hosts
+  debug:
+    msg: "[cid={{ cid }}] Unmapped hosts in {{ validated_env }}: {{ unmapped_hosts | join(', ') }}"
+  when: unmapped_hosts | length > 0
+
+- name: Fail on complete mapping failure
+  fail:
+    msg: "[cid={{ cid }}] No IP mappings found for any hosts in environment {{ validated_env }}"
+  when:
+  - working_targets | length > 0
+  - mapped_hosts | default([]) | length == 0
