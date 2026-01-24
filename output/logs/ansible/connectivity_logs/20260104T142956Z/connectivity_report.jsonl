@@ -1,1 +1,0 @@
-{"cid": "", "env": "na", "hostname": "generic-linux", "ip": "10.10.0.142", "os_family": "Debian", "inventory_group": "cicd_test_linux", "icmp": true, "ssh": true, "telnet": true, "http": false, "http_head": false, "https": false, "https_head": false, "ts_utc": "2026-01-04T14:29:48Z", "tested_by": "user"}

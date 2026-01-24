@@ -80,7 +80,7 @@ Example using a collection lookup and filter:
 
 ## Testing
 
-- Role-local smoke tests are provided under `roles/<role>/tests/` and exercised against a lab inventory.
+- Role-local smoke tests should be provided under `roles/<role>/tests/`.
 - Molecule scenarios may be provided where isolated validation is valuable.
 - Platform integration tests are executed via HybridOps.Studio pipelines and lab inventories.
 

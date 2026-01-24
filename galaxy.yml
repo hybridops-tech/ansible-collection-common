@@ -1,14 +1,14 @@
-# purpose: Galaxy metadata for hybridops.common collection
+# purpose: Ansible Galaxy metadata for hybridops.common collection
 # adr: ADR-0606-ansible-collections-release-process
 # maintainer: HybridOps.Studio
 
 namespace: hybridops
 name: common
-version: "0.1.1"
+version: 0.1.1
 
 readme: README.md
 description: >
-  Shared plugins and utility roles for HybridOps.Studio. Provides a consistent dialect for tags, environment handling, connectivity checks and metadata.
+  Shared plugins and utility roles for HybridOps.Studio, providing common tagging patterns, environment handling, connectivity checks, and governance helpers.
 
 authors:
 - HybridOps.Studio
@@ -16,28 +16,29 @@ authors:
 license:
 - MIT-0
 
+min_ansible_version: "2.15"
+
 tags:
 - hybridops
-- common
-- plugins
-- filters
-- lookup
-- connectivity
-- guard
-- governance
 - automation
+- plugins
+- governance
+- connectivity
 
 homepage: https://docs.hybridops.studio
 documentation: https://docs.hybridops.studio
 repository: https://github.com/hybridops-studio/ansible-collection-common
 issues: https://github.com/hybridops-studio/ansible-collection-common/issues
 
-dependencies: {}
-
 build_ignore:
 - .git
 - .github
+- .tox
 - .venv
+- build
 - dist
+- output
 - tests/output
 - __pycache__
+- .mypy_cache
+- .pytest_cache
