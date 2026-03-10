@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VIP="${EDGE_OBS_VIP:-}"
+IFACE="${EDGE_OBS_VIP_IF:-}"
+
+# If no VIP is configured, allow start (useful for labs)
+if [ -z "$VIP" ]; then
+  exit 0
+fi
+
+if [ -n "$IFACE" ]; then
+  ip -o -4 addr show dev "$IFACE" | awk '{print $4}' | grep -q "^${VIP}/"
+else
+  ip -o -4 addr show | awk '{print $4}' | grep -q "^${VIP}/"
+fi

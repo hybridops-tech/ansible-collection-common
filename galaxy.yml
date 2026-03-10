@@ -1,44 +1,46 @@
+---
 # purpose: Ansible Galaxy metadata for hybridops.common collection
 # adr: ADR-0606-ansible-collections-release-process
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 namespace: hybridops
 name: common
-version: 0.1.1
+version: "0.1.1"
 
 readme: README.md
-description: >
-  Shared plugins and utility roles for HybridOps.Studio, providing common tagging patterns, environment handling, connectivity checks, and governance helpers.
+description: >-
+  Shared plugins and reusable platform roles for HybridOps, including governance,
+  connectivity, container runtime, DNS control-plane, and VyOS WAN helpers.
 
 authors:
-- HybridOps.Studio
+  - HybridOps.Tech
 
 license:
-- MIT-0
-
-min_ansible_version: "2.15"
+  - MIT-0
 
 tags:
-- hybridops
-- automation
-- plugins
-- governance
-- connectivity
+  - hybridops
+  - automation
+  - plugins
+  - governance
+  - connectivity
 
-homepage: https://docs.hybridops.studio
-documentation: https://docs.hybridops.studio
-repository: https://github.com/hybridops-studio/ansible-collection-common
-issues: https://github.com/hybridops-studio/ansible-collection-common/issues
+homepage: https://docs.hybridops.tech
+documentation: https://docs.hybridops.tech
+repository: https://github.com/hybridops-tech/ansible-collection-common
+issues: https://github.com/hybridops-tech/ansible-collection-common/issues
+
+dependencies: {}
 
 build_ignore:
-- .git
-- .github
-- .tox
-- .venv
-- build
-- dist
-- output
-- tests/output
-- __pycache__
-- .mypy_cache
-- .pytest_cache
+  - .git
+  - .github
+  - .tox
+  - .venv
+  - build
+  - dist
+  - output
+  - tests/output
+  - __pycache__
+  - .mypy_cache
+  - .pytest_cache

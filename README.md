@@ -1,45 +1,41 @@
 # `hybridops.common`
 
-Shared plugins and utility roles used across the HybridOps.Studio automation platform. The collection provides cross-cutting helpers for environment governance, connectivity checks, inventory utilities, and common tagging or metadata patterns.
+Shared plugins and reusable platform roles for HybridOps.
 
-Role- and plugin-level behaviour is documented in each role’s `README.md` and plugin docstrings.
+This collection carries the cross-cutting automation surface used across the current HybridOps runtime: environment guardrails, connectivity and inventory helpers, PostgreSQL service primitives, container runtime bootstrap, DNS and control-plane services, and VyOS-based WAN roles.
 
-High-level platform context is maintained at [docs.hybridops.studio](https://docs.hybridops.studio).
+Role-level variables and assumptions are documented in each role's `README.md`. Broader operator guidance lives at [docs.hybridops.tech](https://docs.hybridops.tech).
 
 ## Scope
 
-- Plugins under `plugins/` (filters, lookups, modules, and module utilities) intended for reuse across `hybridops.*` collections.
-- Utility roles for environment governance, connectivity checks, inventory helpers, and lightweight baseline preparation.
-
-## Plugins
-
-Representative plugin families:
-
-- Filters for standard tag and label composition.
-- Lookups for environment defaults and secret-friendly variable resolution.
-- Module utilities for consistent results and metadata.
-- Modules for structured debug and evidence-friendly output.
-
-Exact plugin names and usage are documented via `ansible-doc` and repository sources.
+- Shared plugins under `plugins/` for use across `hybridops.*` collections.
+- Reusable roles for platform governance, connectivity, inventory shaping, container/bootstrap services, DNS control, and WAN edge configuration.
+- Control-node and target-node helpers intended to be consumed directly or through HybridOps modules and blueprints.
 
 ## Roles
 
-Key roles (see role-level READMEs for variables and examples):
-
 | Role | Purpose |
 |------|---------|
+| `connectivity_test` | Connectivity checks with structured results. |
+| `decision_service` | Deploy the decision service control-plane component. |
+| `dns_routing` | Publish and update internal DNS routing records. |
+| `docker_compose_stack` | Deploy Docker Compose based service stacks. |
+| `docker_engine` | Install and configure Docker Engine. |
+| `edge_observability` | Deploy edge observability services. |
 | `env_guard` | Environment governance and guardrail execution. |
-| `connectivity_test` | Connectivity checks with structured outputs. |
 | `gen_inventory` | Inventory generation helpers. |
 | `host_selector` | Governed host targeting helpers. |
 | `ip_mapper` | Environment-aware IP mapping helpers. |
+| `postgresql_service` | Install and configure standalone PostgreSQL service instances. |
+| `powerdns_authority` | Deploy and manage authoritative PowerDNS service. |
+| `vyos_edge_wan` | Configure Hetzner/GCP WAN edge behavior on VyOS. |
+| `vyos_site_extension_edge` | Configure Hetzner-side site extension on VyOS. |
+| `vyos_site_extension_onprem` | Configure on-prem site extension on VyOS. |
 
 ## Requirements
 
-- Ansible `ansible-core` 2.15+.
-- Python 3.10+ on the control node.
-
-Plugins execute on the control node and are consumed by playbooks and roles in other collections.
+- Ansible `ansible-core` 2.15+
+- Python 3.10+ on the control node
 
 ## Installation
 
@@ -59,35 +55,26 @@ collections:
 
 ## Usage
 
-Example using a collection lookup and filter:
-
 ```yaml
-- name: Demonstrate common plugins
-  hosts: localhost
-  gather_facts: false
+- name: Install Docker Engine and deploy a compose stack
+  hosts: service_hosts
+  become: true
   collections:
     - hybridops.common
 
-  vars:
-    raw_env: "{{ lookup('hybridops.common.hybridops_env_default', 'HOS_ENV', default='dev') }}"
-    standard_tag: "{{ raw_env | hybridops_env_tag('rke2-node') }}"
-
-  tasks:
-    - name: Show derived tag
-      ansible.builtin.debug:
-        msg: "Standard tag for this run: {{ standard_tag }}"
+  roles:
+    - role: hybridops.common.docker_engine
+    - role: hybridops.common.docker_compose_stack
 ```
 
 ## Testing
 
-- Role-local smoke tests are provided under `roles/<role>/tests/` and exercised against a lab inventory.
-- Molecule scenarios may be provided where isolated validation is valuable.
-- Platform integration tests are executed via HybridOps.Studio pipelines and lab inventories.
+- Role-local smoke tests are provided where isolated validation is useful.
+- Platform integration is proven through HybridOps modules and blueprints in `hybridops-core`.
 
 ## License
 
-- Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)  
-- Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)
+- Documentation: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-See the [HybridOps.Studio licensing overview](https://docs.hybridops.studio/briefings/legal/licensing/)
-for project-wide licence details, including branding and trademark notes.
+See the project licensing guidance at [docs.hybridops.tech](https://docs.hybridops.tech).
