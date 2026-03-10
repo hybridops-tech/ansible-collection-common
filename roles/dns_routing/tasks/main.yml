@@ -37,20 +37,37 @@
 
 - name: Build effective targets from desired mode
   ansible.builtin.set_fact:
-    _dns_targets_effective: "{{ ((desired | lower) == 'primary') | ternary((primary_targets | default([])), (secondary_targets | default([]))) }}"
+    _dns_targets_effective: >-
+      {{
+        ((desired | lower) == 'primary')
+        | ternary((primary_targets | default([])), (secondary_targets | default([])))
+      }}
   when: dns_state == "present"
   changed_when: false
 
 - name: Build PowerDNS effective values
   ansible.builtin.set_fact:
-    _powerdns_zone_id_effective: "{{ (powerdns_zone_id | default('', true) | string | trim) or (zone | string | trim) }}"
-    _powerdns_record_name_effective: "{{ (record_fqdn | string).endswith('.') | ternary((record_fqdn | string), ((record_fqdn | string) ~ '.')) }}"
+    _powerdns_zone_id_effective: >-
+      {{
+        (powerdns_zone_id | default('', true) | string | trim)
+        or (zone | string | trim)
+      }}
+    _powerdns_record_name_effective: >-
+      {{
+        (record_fqdn | string).endswith('.')
+        | ternary((record_fqdn | string), ((record_fqdn | string) ~ '.'))
+      }}
     _powerdns_records_effective: []
     _powerdns_comments_effective: >-
       {{
         ((powerdns_comment | default('', true) | string | trim) != '') |
         ternary(
-          [{'content': (powerdns_comment | string | trim), 'account': (powerdns_account | default('hyops', true) | string)}],
+          [
+            {
+              'content': (powerdns_comment | string | trim),
+              'account': (powerdns_account | default('hyops', true) | string)
+            }
+          ],
           []
         )
       }}
@@ -59,7 +76,11 @@
 
 - name: Build PowerDNS record list
   ansible.builtin.set_fact:
-    _powerdns_records_effective: "{{ (_powerdns_records_effective | default([])) + [ {'content': (item | string), 'disabled': false} ] }}"
+    _powerdns_records_effective: >-
+      {{
+        (_powerdns_records_effective | default([]))
+        + [{'content': (item | string), 'disabled': false}]
+      }}
   loop: "{{ _dns_targets_effective | default([]) }}"
   when: dns_state == "present"
   changed_when: false
@@ -70,7 +91,10 @@
       {{
         [
           {
-            'content': ((item.content | string).endswith('.') | ternary((item.content | string), ((item.content | string) ~ '.'))),
+            'content': (
+              (item.content | string).endswith('.')
+              | ternary((item.content | string), ((item.content | string) ~ '.'))
+            ),
             'disabled': false
           }
           for item in (_powerdns_records_effective | default([]))
@@ -114,7 +138,10 @@
           'effective_targets': (_dns_targets_effective | default([])),
           'dry_run': (dry_run | bool),
           'dns_apply': (dns_apply | bool),
-          'status': (((dry_run | bool) or not (dns_apply | bool)) | ternary('intent-only', 'apply-requested'))
+          'status': (
+            ((dry_run | bool) or not (dns_apply | bool))
+            | ternary('intent-only', 'apply-requested')
+          )
         } | to_nice_json
       }}
   when: dns_state == "present"
@@ -140,7 +167,12 @@
 
 - name: Resolve PowerDNS API key from environment
   ansible.builtin.set_fact:
-    _powerdns_api_key_effective: "{{ lookup('ansible.builtin.env', powerdns_api_key_env) | default('', true) | string }}"
+    _powerdns_api_key_effective: >-
+      {{
+        lookup('ansible.builtin.env', powerdns_api_key_env)
+        | default('', true)
+        | string
+      }}
   when:
     - dns_state == "present"
     - dns_apply | bool
@@ -161,7 +193,12 @@
 
 - name: Update DNS record via PowerDNS API
   ansible.builtin.uri:
-    url: "{{ (powerdns_api_url | regex_replace('/+$', '')) ~ '/api/v1/servers/' ~ (powerdns_server_id | urlencode) ~ '/zones/' ~ (_powerdns_zone_id_effective | urlencode) }}"
+    url: >-
+      {{
+        (powerdns_api_url | regex_replace('/+$', ''))
+        ~ '/api/v1/servers/' ~ (powerdns_server_id | urlencode)
+        ~ '/zones/' ~ (_powerdns_zone_id_effective | urlencode)
+      }}
     method: PATCH
     headers:
       X-API-Key: "{{ _powerdns_api_key_effective }}"
