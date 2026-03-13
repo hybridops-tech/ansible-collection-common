@@ -1,18 +1,18 @@
 # postgresql_service
 
-Wrapper role that installs and configures PostgreSQL using the upstream `geerlingguy.postgresql` role, enforcing HybridOps.Studio defaults, a stable variable schema, and optional evidence capture.
+Wrapper role that installs and configures PostgreSQL using the upstream `geerlingguy.postgresql` role, enforcing HybridOps.Tech defaults, a stable variable schema, and optional evidence capture.
 
 This role targets shared services and data-tier PostgreSQL deployments consumed by multiple workloads (VMs and Kubernetes).
 
-## Architecture alignment (HybridOps.Studio)
+## Architecture alignment (HybridOps.Tech)
 
-This role implements the PostgreSQL “shared state tier” pattern used in HybridOps.Studio:
+This role implements the PostgreSQL “shared state tier” pattern used in HybridOps.Tech:
 
-- [ADR-0501 — PostgreSQL on dedicated VM with DR replication](https://docs.hybridops.studio/adr/ADR-0501-postgresql-on-dedicated-vm-with-dr-replication/) — primary deployment model (VM outside Kubernetes).
-- [ADR-0101 — VLAN Allocation Strategy](https://docs.hybridops.studio/adr/ADR-0101-vlan-allocation-strategy/) and [ADR-0103 — Inter-VLAN Firewall Policy](https://docs.hybridops.studio/adr/ADR-0103-inter-vlan-firewall-policy/) — data-tier segmentation supported via `listen_addresses` + allowlisted `pg_hba.conf` (routing/firewall enforcement is out of scope).
-- [ADR-0020 — Secrets Strategy (AKV now; SOPS fallback; Vault later)](https://docs.hybridops.studio/adr/ADR-0020-secrets-strategy-akv-now-sops-fallback-vault-later/) and [ADR-0502 — ESO + AKV for Kubernetes secrets](https://docs.hybridops.studio/adr/ADR-0502-external-secrets-operator-akv/) — secret values are supplied by the caller; Kubernetes workloads should consume secrets via ESO/AKV, while VM provisioning uses a VM-side secret feed.
+- [ADR-0501 — PostgreSQL on dedicated VM with DR replication](https://docs.hybridops.tech/adr/ADR-0501-postgresql-on-dedicated-vm-with-dr-replication/) — primary deployment model (VM outside Kubernetes).
+- [ADR-0101 — VLAN Allocation Strategy](https://docs.hybridops.tech/adr/ADR-0101-vlan-allocation-strategy/) and [ADR-0103 — Inter-VLAN Firewall Policy](https://docs.hybridops.tech/adr/ADR-0103-inter-vlan-firewall-policy/) — data-tier segmentation supported via `listen_addresses` + allowlisted `pg_hba.conf` (routing/firewall enforcement is out of scope).
+- [ADR-0020 — Secrets Strategy (AKV now; SOPS fallback; Vault later)](https://docs.hybridops.tech/adr/ADR-0020-secrets-strategy-akv-now-sops-fallback-vault-later/) and [ADR-0502 — ESO + AKV for Kubernetes secrets](https://docs.hybridops.tech/adr/ADR-0502-external-secrets-operator-akv/) — secret values are supplied by the caller; Kubernetes workloads should consume secrets via ESO/AKV, while VM provisioning uses a VM-side secret feed.
 
-> Note: ADR references are specific to HybridOps.Studio. The role remains usable as a general-purpose PostgreSQL wrapper.
+> Note: ADR references are specific to HybridOps.Tech. The role remains usable as a general-purpose PostgreSQL wrapper.
 
 ## Purpose and scope
 
@@ -24,7 +24,7 @@ This role implements the PostgreSQL “shared state tier” pattern used in Hybr
   - Remote listen requires an explicit allowlist.
   - SCRAM authentication default for generated TCP host rules.
 - Create databases, users, and privileges when configured.
-- Optionally capture evidence artefacts (service status and readiness).
+- Optionally capture service status and readiness outputs.
 
 ### Excluded
 
@@ -135,7 +135,7 @@ hybridops_postgres_privs:
   Enables evidence capture tasks.
 
 - `hybridops_evidence_dir` (default: `/var/lib/hybridops/evidence/postgresql`)  
-  Output directory for evidence artefacts.
+  Output directory for captured status files.
 
 Artefacts written:
 
@@ -192,12 +192,12 @@ hybridops_postgres_allowed_clients:
 
 - Allowlisting by node `/32` addresses is the default v1 posture for Kubernetes egress. Broader CIDRs are acceptable only as a time-bound bring-up aid.
 - PostgreSQL cannot bind to an address that is not present on a host interface. Ensure the data-tier IP exists on the VM before enabling remote listen.
-- Evidence capture is designed for governed platform runs; enable it explicitly in platform inventories or CI contexts where artefacts are collected.
+- Status capture is designed for governed platform runs; enable it explicitly in platform inventories or CI contexts where those files are collected.
 
 ## License
 
 - Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)  
 - Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-See the [HybridOps.Studio licensing overview](https://docs.hybridops.studio/briefings/legal/licensing/)
+See the [HybridOps.Tech licensing overview](https://docs.hybridops.tech/briefings/legal/licensing/)
 for project-wide licence details, including branding and trademark notes.

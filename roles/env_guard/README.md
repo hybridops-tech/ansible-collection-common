@@ -1,12 +1,11 @@
 # Environment Guard Framework (`env_guard`)
 
-**Enterprise-grade deployment governance for Ansible infrastructure**
+**Deployment governance for Ansible infrastructure**
 
 [![License: MIT-0](https://img.shields.io/badge/License-MIT--0-blue.svg)](https://opensource.org/licenses/MIT-0)
 [![Ansible](https://img.shields.io/badge/ansible-2.13%2B-red.svg)](https://ansible.com)
 
-**Maintainer:** HybridOps.Studio  
-**ADR:** [ADR-0600 – Environment Guard Framework](https://docs.hybridops.studio/adr/ADR-0600-environment-guard-framework/)
+**ADR:** [ADR-0600 – Environment Guard Framework](https://docs.hybridops.tech/adr/ADR-0600-environment-guard-framework/)
 
 ---
 
@@ -17,7 +16,7 @@
 - Validates the **target environment** (`dev`, `staging`, `prod`).
 - Calculates a **risk score** and enforces approval rules.
 - Applies **maintenance window** rules for higher-risk environments.
-- Emits a **correlation ID (CID)** and writes audit artefacts.
+- Emits a **correlation ID (CID)** and writes audit outputs.
 
 It is designed to run before any change workflow (deployments, infrastructure updates, migrations).
 
@@ -51,7 +50,7 @@ The CID is:
 
 ---
 
-## 3. Logging and artefacts
+## 3. Logging and outputs
 
 ### 3.1 Default locations
 
@@ -125,7 +124,7 @@ On success, the role sets:
 - `validated_env` – normalised environment (e.g. `production` → `prod`).
 - `env_guard_passed` – `true` when validation succeeded.
 - `env_guard_risk_score` – numeric risk level for `validated_env`.
-- `env_guard_correlation_id` – correlation ID used for audit artefacts.
+- `env_guard_correlation_id` – correlation ID used for audit outputs.
 - `env_guard_version` – framework version string.
 - `env_guard_timestamp` – timestamp for the run (ISO 8601).
 - `env_guard_user` – user under which the run is executed.
@@ -235,16 +234,16 @@ env_guard
 ## 8. Documentation and further reading
 
 - **ADR-0600 – Environment Guard Framework**  
-  Design rationale, pipeline ordering, CID model, and evidence layout.  
-  See: [ADR-0600 – Environment Guard Framework](https://docs.hybridops.studio/adr/ADR-0600-environment-guard-framework/)
+  Design rationale, pipeline ordering, CID model, and run-record layout.  
+  See: [ADR-0600 – Environment Guard Framework](https://docs.hybridops.tech/adr/ADR-0600-environment-guard-framework/)
 
 - **Environments & guardrails concept**  
   Business-level view of dev/staging/prod guardrails and how EGF supports them.  
-  See: [Environments & Guardrails](https://docs.hybridops.studio/guides/concepts/environments-and-guardrails/)
+  See: [Environments & Guardrails](https://docs.hybridops.tech/guides/concepts/environments-and-guardrails/)
 
 - **Ansible role index**  
   Position of `env_guard` within the HybridOps collections and pipelines.  
-  See: [Ansible role index](https://docs.hybridops.studio/guides/reference/ansible-role-index/)
+  See: [Ansible role index](https://docs.hybridops.tech/guides/reference/ansible-role-index/)
 
 ---
 
@@ -253,5 +252,5 @@ env_guard
 - Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)  
 - Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-See the [HybridOps.Studio licensing overview](https://docs.hybridops.studio/briefings/legal/licensing/)
+See the [HybridOps licensing overview](https://docs.hybridops.tech/briefings/legal/licensing/)
 for project-wide licence details, including branding and trademark notes.

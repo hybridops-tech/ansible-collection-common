@@ -1,9 +1,8 @@
 # Role: hybridops.common.connectivity_test
 
-Enterprise-grade connectivity validation across ICMP, SSH, Telnet, HTTP, and HTTPS.  
-Designed to integrate with the Environment Guard Framework (EGF) and produce structured artefacts suitable for CI/CD gates and evidence packs.
+Connectivity validation across ICMP, SSH, Telnet, HTTP, and HTTPS.  
+Designed to integrate with the Environment Guard Framework (EGF) and produce structured results suitable for CI gates and reviewable run records.
 
-**Maintainer:** HybridOps.Studio  
 **License:** MIT-0 (code), CC BY 4.0 (docs)
 
 ---
@@ -28,7 +27,7 @@ output/logs/ansible/connectivity_logs/<run_id>/
   connectivity_report.jsonl
 ```
 
-Each host’s result includes environment, OS family, inventory group, protocol status flags, timestamps, and correlation ID, making it suitable for both CI gates and evidence packs.
+Each host’s result includes environment, OS family, inventory group, protocol status flags, timestamps, and correlation ID, making it suitable for both CI gates and reviewable run records.
 
 ---
 
@@ -47,7 +46,7 @@ flowchart LR
     A[env_guard<br/>Governance / risk] --> B[gen_inventory<br/>Placeholder inventory]
     B --> C[host_selector<br/>Target selection]
     C --> D[ip_mapper<br/>IP resolution]
-    D --> E[connectivity_test<br/>Connectivity + artefacts]
+    D --> E[connectivity_test<br/>Connectivity + results]
     E --> F[deployment<br/>Controlled rollout]
 ```
 
@@ -62,7 +61,7 @@ This role can still be used without the other EGF roles if you already have real
 
 ---
 
-## 3. Defaults and artefact layout
+## 3. Defaults and result layout
 
 Key defaults (from `defaults/main.yml`):
 
@@ -77,7 +76,7 @@ Key defaults (from `defaults/main.yml`):
 - Paths:
   - `connectivity.paths.logs_dir: "{{ _project_root }}/output/logs/ansible"`
   - `connectivity.paths.connectivity_logs_dir: "{{ _project_root }}/output/logs/ansible/connectivity_logs"`
-- Artefacts:
+- Output files:
   - `connectivity.audit.report_prefix: "connectivity_report"`
   - `connectivity.audit.json_file: "connectivity_report.json"`
   - `connectivity.audit.jsonl_file: "connectivity_report.jsonl"`
@@ -183,21 +182,21 @@ ansible-playbook   -i ansible_collections/hybridops/common/roles/connectivity_te
 The smoke test:
 
 - Executes the role against `test_targets`.
-- Validates that JSON and JSONL artefacts exist.
-- Copies artefacts into the role’s `tests/output/` directory for inspection.
+- Validates that JSON and JSONL outputs exist.
+- Copies outputs into the role’s `tests/output/` directory for inspection.
 
 ---
 
 ## 7. CI/CD integration
 
-A CI job (for example GitHub Actions or Jenkins) can treat connectivity artefacts as a gate:
+A CI job (for example GitHub Actions or Jenkins) can treat connectivity outputs as a gate:
 
 ```yaml
 - name: Run connectivity test
   run: |
     ansible-playbook       -i inventories/prod/test_inventory.ini       playbooks/connectivity.yml       -e env=prod       -e correlation_id=egf-20250909-01       -e connectivity_inventory_group=cicd_test
 
-- name: Upload connectivity artefacts
+- name: Upload connectivity results
   uses: actions/upload-artifact@v4
   with:
     name: connectivity-artifacts
@@ -219,18 +218,18 @@ The role also publishes run metadata via `set_stats`, so downstream jobs can con
 This role is one component of the Environment Guard Framework (EGF).  
 Extended documentation, diagrams, and portfolio examples live on the docs site:
 
-- [HybridOps.Studio docs](https://docs.hybridops.studio/guides/concepts/environments-and-guardrails.md) – EGF, connectivity flows, and portfolio examples.
+- [HybridOps docs](https://docs.hybridops.tech/guides/concepts/environments-and-guardrails.md) – EGF, connectivity flows, and platform guidance.
 
 When used from Ansible Galaxy, treat this README as the primary reference and use the role names above for cross-navigation. The external documentation site provides the full pipeline narrative.
 
 ## Further documentation
 
-- [Ansible role index](https://docs.hybridops.studio/guides/reference/ansible-role-index/)
+- [Ansible role index](https://docs.hybridops.tech/guides/reference/ansible-role-index/)
 
 ## License
 
 - Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)  
 - Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-See the [HybridOps.Studio licensing overview](https://docs.hybridops.studio/briefings/legal/licensing/)
+See the [HybridOps licensing overview](https://docs.hybridops.tech/briefings/legal/licensing/)
 for project-wide licence details, including branding and trademark notes.

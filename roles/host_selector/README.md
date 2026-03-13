@@ -1,17 +1,15 @@
 # Host Selector Role
 
-**Enterprise host targeting with governance integration**
+**Host targeting with governance integration**
 
 [![License: MIT-0](https://img.shields.io/badge/License-MIT--0-blue.svg)](https://opensource.org/licenses/MIT-0)
 [![Ansible](https://img.shields.io/badge/ansible-2.13%2B-red.svg)](https://ansible.com)
-
-**Maintainer:** HybridOps.Studio  
 
 ---
 
 ## Overview
 
-Production-grade host selection role for Ansible-based automation. Provides secure, auditable targeting with four selection methods and governance integration via `env_guard`.
+Host selection role for Ansible-based automation. It provides controlled targeting with four selection methods and governance integration via `env_guard`.
 
 **Highlights:**
 
@@ -140,15 +138,15 @@ Typical upstream and downstream roles:
 
 - **ADR-0600 – Environment Guard Framework**  
   Design rationale for the `env_guard → gen_inventory → host_selector → ip_mapper → connectivity_test` pipeline.  
-  [Read ADR-0600](https://docs.hybridops.studio/adr/ADR-0600-environment-guard-framework/)
+  [Read ADR-0600](https://docs.hybridops.tech/adr/ADR-0600-environment-guard-framework/)
 
 - **Environments & guardrails concept**  
   Business-level view of dev/staging/prod guardrails and how host selection fits into that model.  
-  [Environments & guardrails](https://docs.hybridops.studio/guides/concepts/environments-and-guardrails/)
+  [Environments & guardrails](https://docs.hybridops.tech/guides/concepts/environments-and-guardrails/)
 
 - **Ansible role index**  
   Position of `host_selector` within the HybridOps collections and pipelines.  
-  [Ansible role index](https://docs.hybridops.studio/guides/reference/ansible-role-index/)
+  [Ansible role index](https://docs.hybridops.tech/guides/reference/ansible-role-index/)
 
 ---
 
@@ -157,5 +155,5 @@ Typical upstream and downstream roles:
 - Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)  
 - Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-See the [HybridOps.Studio licensing overview](https://docs.hybridops.studio/briefings/legal/licensing/)
+See the [HybridOps licensing overview](https://docs.hybridops.tech/briefings/legal/licensing/)
 for project-wide licence details, including branding and trademark notes.
