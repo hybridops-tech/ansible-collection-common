@@ -6,5 +6,5 @@
 
 ipmapper_use_cid: true
 ipmapper_inherited_cid: "{{ correlation_id | default(egf_correlation_id | default('', true), true) | lower }}"
-ipmapper_env_cid: "{{ lookup('env','EGF_CORR_ID') | default('', true) | lower }}"
+ipmapper_env_cid: "{{ lookup('env', 'EGF_CORR_ID') | default('', true) | lower }}"
 ipmapper_cid_pre: "{{ ipmapper_inherited_cid or ipmapper_env_cid }}"

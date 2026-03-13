@@ -4,11 +4,8 @@
   become: true
   gather_facts: true
 
-  collections:
-    - hybridops.common
-
   roles:
-    - role: edge_observability
+    - role: hybridops.common.edge_observability
       vars:
         edge_obs_objstore_config: |
           type: GCS

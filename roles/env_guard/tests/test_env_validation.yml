@@ -10,142 +10,146 @@
   gather_facts: true
 
   vars:
-    valid_environments: [ "dev", "staging", "prod" ]
+    valid_environments: ["dev", "staging", "prod"]
     framework_version: "2.1.2"
     copy_to_output: true
 
   tasks:
-  - name: Prompt for environment selection
-    ansible.builtin.pause:
-      prompt: |
-        Select target environment:
-          - dev: Development (auto-approved)
-          - staging: Staging (conditional approval)
-          - prod: Production (manual approval required)
-        Enter environment [dev]:
-    register: user_input
+    - name: Prompt for environment selection
+      ansible.builtin.pause:
+        prompt: |
+          Select target environment:
+            - dev: Development (auto-approved)
+            - staging: Staging (conditional approval)
+            - prod: Production (manual approval required)
+          Enter environment [dev]:
+      register: user_input
 
-  - name: Normalise selected environment
-    ansible.builtin.set_fact:
-      target_environment: "{{ (user_input.user_input | default('dev')) | trim | lower }}"
+    - name: Normalise selected environment
+      ansible.builtin.set_fact:
+        target_environment: "{{ (user_input.user_input | default('dev')) | trim | lower }}"
 
-  - name: Enforce environment choices
-    ansible.builtin.fail:
-      msg: "Invalid environment '{{ target_environment }}'. Valid options: {{ valid_environments | join(', ') }}"
-    when: target_environment not in valid_environments
+    - name: Enforce environment choices
+      ansible.builtin.fail:
+        msg: >-
+          Invalid environment '{{ target_environment }}'.
+          Valid options: {{ valid_environments | join(', ') }}
+      when: target_environment not in valid_environments
 
-  - name: Run env_guard for selected environment
-    ansible.builtin.include_role:
-      name: hybridops.common.env_guard
-    vars:
-      env: "{{ target_environment }}"
+    - name: Run env_guard for selected environment
+      ansible.builtin.include_role:
+        name: hybridops.common.env_guard
+      vars:
+        env: "{{ target_environment }}"
 
-  - name: Validate framework response
-    ansible.builtin.assert:
-      that:
-      - validated_env == target_environment
-      - env_guard_passed | bool
-      - env_guard_correlation_id is defined
-      - env_guard_correlation_id | length > 0
-      - env_guard_correlation_id is match("^(envguard-[0-9a-f]{16}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$")
-      fail_msg: "Environment guard validation failed"
-      success_msg: "Environment guard validation completed for {{ target_environment }}"
+    - name: Validate framework response
+      ansible.builtin.assert:
+        that:
+          - validated_env == target_environment
+          - env_guard_passed | bool
+          - env_guard_correlation_id is defined
+          - env_guard_correlation_id | length > 0
+          - env_guard_correlation_id is match(
+              "^(envguard-[0-9a-f]{16}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$"
+            )
+        fail_msg: "Environment guard validation failed"
+        success_msg: "Environment guard validation completed for {{ target_environment }}"
 
-  - name: Derive project and logs root
-    ansible.builtin.set_fact:
-      _project_root: >-
-        {{
-          playbook_dir
-          | regex_replace('/deployment/ci/playbooks.*$', '')
-          | regex_replace('/common/playbooks.*$', '')
-          | regex_replace('/roles/.*$', '')
-        }}
-      env_guard_logs_root: >-
-        {{
-          env_guard.paths.env_guard_logs_dir
-          | default(_project_root ~ '/output/logs/ansible/env_guard_logs')
-        }}
+    - name: Derive project and logs root
+      ansible.builtin.set_fact:
+        _project_root: >-
+          {{
+            playbook_dir
+            | regex_replace('/deployment/ci/playbooks.*$', '')
+            | regex_replace('/common/playbooks.*$', '')
+            | regex_replace('/roles/.*$', '')
+          }}
+        env_guard_logs_root: >-
+          {{
+            env_guard.paths.env_guard_logs_dir
+            | default(_project_root ~ '/output/logs/ansible/env_guard_logs')
+          }}
 
-  - name: Use latest run by default
-    ansible.builtin.set_fact:
-      env_guard_run_dir: "{{ env_guard_logs_root }}/latest"
+    - name: Use latest run by default
+      ansible.builtin.set_fact:
+        env_guard_run_dir: "{{ env_guard_logs_root }}/latest"
 
-  - name: Stat env_guard_run_dir (follow symlink)
-    ansible.builtin.stat:
-      path: "{{ env_guard_run_dir }}"
-      follow: true
-    register: run_dir_stat
-    changed_when: false
+    - name: Stat env_guard_run_dir (follow symlink)
+      ansible.builtin.stat:
+        path: "{{ env_guard_run_dir }}"
+        follow: true
+      register: run_dir_stat
+      changed_when: false
 
-  - name: Discover newest run folder as fallback
-    ansible.builtin.find:
-      paths: "{{ env_guard_logs_root }}"
-      file_type: directory
-      recurse: false
-    register: run_dirs
-    when: not run_dir_stat.stat.exists
+    - name: Discover newest run folder as fallback
+      ansible.builtin.find:
+        paths: "{{ env_guard_logs_root }}"
+        file_type: directory
+        recurse: false
+      register: run_dirs
+      when: not run_dir_stat.stat.exists
 
-  - name: Choose newest run folder
-    ansible.builtin.set_fact:
-      env_guard_run_dir: "{{ (run_dirs.files | sort(attribute='mtime', reverse=True) | first).path }}"
-    when:
-    - not run_dir_stat.stat.exists
-    - run_dirs.matched | int > 0
+    - name: Choose newest run folder
+      ansible.builtin.set_fact:
+        env_guard_run_dir: "{{ (run_dirs.files | sort(attribute='mtime', reverse=True) | first).path }}"
+      when:
+        - not run_dir_stat.stat.exists
+        - run_dirs.matched | int > 0
 
-  - name: Re-stat env_guard_run_dir after fallback
-    ansible.builtin.stat:
-      path: "{{ env_guard_run_dir }}"
-      follow: true
-    register: run_dir_stat2
-    changed_when: false
-    when: not run_dir_stat.stat.exists
+    - name: Re-stat env_guard_run_dir after fallback
+      ansible.builtin.stat:
+        path: "{{ env_guard_run_dir }}"
+        follow: true
+      register: run_dir_stat2
+      changed_when: false
+      when: not run_dir_stat.stat.exists
 
-  - name: Fail if no env_guard run directory is available
-    ansible.builtin.fail:
-      msg: >-
-        No env_guard run directory found under {{ env_guard_logs_root }} (checked: {{ env_guard_run_dir }})
-    when:
-    - not run_dir_stat.stat.exists
-    - run_dir_stat2 is not defined or not run_dir_stat2.stat.exists
+    - name: Fail if no env_guard run directory is available
+      ansible.builtin.fail:
+        msg: >-
+          No env_guard run directory found under {{ env_guard_logs_root }}
+          (checked: {{ env_guard_run_dir }})
+      when:
+        - not run_dir_stat.stat.exists
+        - run_dir_stat2 is not defined or not run_dir_stat2.stat.exists
 
-  - name: Check audit log
-    ansible.builtin.stat:
-      path: "{{ env_guard_run_dir }}/{{ env_guard.audit.log_file | default('env_guard_audit.log') }}"
-    register: audit_log_stat
-    changed_when: false
+    - name: Check audit log
+      ansible.builtin.stat:
+        path: "{{ env_guard_run_dir }}/{{ env_guard.audit.log_file | default('env_guard_audit.log') }}"
+      register: audit_log_stat
+      changed_when: false
 
-  - name: Locate at least one report
-    ansible.builtin.find:
-      paths: "{{ env_guard_run_dir }}"
-      patterns: "{{ env_guard.audit.report_prefix | default('env_guard_report') }}_*.md"
-      file_type: file
-      recurse: false
-    register: report_files
-    changed_when: false
+    - name: Locate at least one report
+      ansible.builtin.find:
+        paths: "{{ env_guard_run_dir }}"
+        patterns: "{{ env_guard.audit.report_prefix | default('env_guard_report') }}_*.md"
+        file_type: file
+        recurse: false
+      register: report_files
+      changed_when: false
 
-  - name: Assert artifacts exist
-    ansible.builtin.assert:
-      that:
-      - audit_log_stat.stat.exists
-      - report_files.matched | int > 0
-      fail_msg: "Missing env_guard artifacts in {{ env_guard_run_dir }}."
-      success_msg: "env_guard audit log and reports present in {{ env_guard_run_dir }}."
+    - name: Assert artifacts exist
+      ansible.builtin.assert:
+        that:
+          - audit_log_stat.stat.exists
+          - report_files.matched | int > 0
+        fail_msg: "Missing env_guard artifacts in {{ env_guard_run_dir }}."
+        success_msg: "env_guard audit log and reports present in {{ env_guard_run_dir }}."
 
-  - name: Ensure tests/output/<run_id> exists
-    ansible.builtin.file:
-      path: "{{ playbook_dir }}/output/{{ env_guard_run_dir | basename }}"
-      state: directory
-      mode: "0755"
-    when: copy_to_output
+    - name: Ensure tests/output/<run_id> exists
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/output/{{ env_guard_run_dir | basename }}"
+        state: directory
+        mode: "0755"
+      when: copy_to_output
 
-  - name: Copy audit artifacts to tests/output/<run_id>
-    ansible.builtin.copy:
-      src: "{{ item }}"
-      dest: "{{ playbook_dir }}/output/{{ env_guard_run_dir | basename }}/{{ item | basename }}"
-      remote_src: true
-      mode: "0644"
-    loop:
-    - "{{ env_guard_run_dir }}/{{ env_guard.audit.log_file | default('env_guard_audit.log') }}"
-    - "{{ (report_files.files | sort(attribute='mtime', reverse=True) | first).path }}"
-    when: copy_to_output
-    ignore_errors: true
+    - name: Copy audit artifacts to tests/output/<run_id>
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ playbook_dir }}/output/{{ env_guard_run_dir | basename }}/{{ item | basename }}"
+        remote_src: true
+        mode: "0644"
+      loop:
+        - "{{ env_guard_run_dir }}/{{ env_guard.audit.log_file | default('env_guard_audit.log') }}"
+        - "{{ (report_files.files | sort(attribute='mtime', reverse=True) | first).path }}"
+      when: copy_to_output

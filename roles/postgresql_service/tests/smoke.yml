@@ -3,7 +3,7 @@
 # adr: ADR-0606-ansible-collections-release-process
 # maintainer: HybridOps.Tech
 
-- name: postgresql_service smoke test
+- name: PostgreSQL service smoke test
   hosts: all
   become: true
 

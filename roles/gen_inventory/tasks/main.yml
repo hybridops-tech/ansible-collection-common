@@ -30,11 +30,11 @@
     _root_playbook: "{{ (playbook_dir | realpath) | trim }}"
   ansible.builtin.set_fact:
     root_candidates_raw:
-    - { label: "explicit_var", path: "{{ _root_explicit }}" }
-    - { label: "environment_var", path: "{{ _root_env }}" }
-    - { label: "git_repo_root", path: "{{ _root_git }}" }
-    - { label: "role_path_root", path: "{{ _root_role }}" }
-    - { label: "playbook_dir_fallback", path: "{{ _root_playbook }}" }
+      - {label: "explicit_var", path: "{{ _root_explicit }}"}
+      - {label: "environment_var", path: "{{ _root_env }}"}
+      - {label: "git_repo_root", path: "{{ _root_git }}"}
+      - {label: "role_path_root", path: "{{ _root_role }}"}
+      - {label: "playbook_dir_fallback", path: "{{ _root_playbook }}"}
   delegate_to: localhost
   run_once: true
 
@@ -62,79 +62,73 @@
   run_once: true
 
 - name: Scan markers in candidate inventories
-  block:
-  - name: Stat markers
-    ansible.builtin.stat:
-      path: "{{ item.0.path }}/{{ inventories_dir_name }}/{{ item.1 }}"
-    register: _marker_stats
-    loop: "{{ root_candidates | product(inventories_marker_candidates) | list }}"
-    loop_control:
-      label: "{{ item.0.label }} -> {{ item.1 }}"
-    delegate_to: localhost
-    run_once: true
-
-  - name: Select project root by first marker match
-    ansible.builtin.set_fact:
-      project_root: >-
-        {{
-          (
-            _marker_stats.results
-            | selectattr('stat.exists')
-            | list
-            | map(attribute='item.0.path')
-            | list
-            | first
-          )
-          | default('')
-        }}
-      detection_method: >-
-        {{
-          (
-            _marker_stats.results
-            | selectattr('stat.exists')
-            | list
-            | length
-          )
-          | ternary('inventories_marker', '')
-        }}
-    delegate_to: localhost
-    run_once: true
   delegate_to: localhost
   run_once: true
+  block:
+    - name: Stat markers
+      ansible.builtin.stat:
+        path: "{{ item.0.path }}/{{ inventories_dir_name }}/{{ item.1 }}"
+      register: _marker_stats
+      loop: "{{ root_candidates | product(inventories_marker_candidates) | list }}"
+      loop_control:
+        label: "{{ item.0.label }} -> {{ item.1 }}"
+
+    - name: Select project root by first marker match
+      ansible.builtin.set_fact:
+        project_root: >-
+          {{
+            (
+              _marker_stats.results
+              | selectattr('stat.exists')
+              | list
+              | map(attribute='item.0.path')
+              | list
+              | first
+            )
+            | default('')
+          }}
+        detection_method: >-
+          {{
+            (
+              _marker_stats.results
+              | selectattr('stat.exists')
+              | list
+              | length
+            )
+            | ternary('inventories_marker', '')
+          }}
 
 - name: Resolve project root by inventories directory or fallback
   when: (project_root | default('')) | length == 0
   block:
-  - name: Pick first candidate with inventories dir; fallback to last candidate
-    ansible.builtin.set_fact:
-      project_root: >-
-        {{
-          (
-            root_candidates
-            | zip(_inv_dir_stats.results)
-            | selectattr('1.stat.exists')
-            | map('first')
-            | map(attribute='path')
-            | list
-            | first
-          )
-          | default(root_candidates | map(attribute='path') | list | last)
-        }}
-      detection_method: >-
-        {{
-          (
-            root_candidates
-            | zip(_inv_dir_stats.results)
-            | selectattr('1.stat.exists')
-            | map('first')
-            | map(attribute='label')
-            | list
-            | first
-          )
-          | default(root_candidates | map(attribute='label') | list | last)
-        }}
-    delegate_to: localhost
-    run_once: true
+    - name: Pick first candidate with inventories dir; fallback to last candidate
+      ansible.builtin.set_fact:
+        project_root: >-
+          {{
+            (
+              root_candidates
+              | zip(_inv_dir_stats.results)
+              | selectattr('1.stat.exists')
+              | map('first')
+              | map(attribute='path')
+              | list
+              | first
+            )
+            | default(root_candidates | map(attribute='path') | list | last)
+          }}
+        detection_method: >-
+          {{
+            (
+              root_candidates
+              | zip(_inv_dir_stats.results)
+              | selectattr('1.stat.exists')
+              | map('first')
+              | map(attribute='label')
+              | list
+              | first
+            )
+            | default(root_candidates | map(attribute='label') | list | last)
+          }}
 
 - name: Set inventory base path
   ansible.builtin.set_fact:
@@ -165,7 +159,9 @@
 
 - name: Fail if environment data file is missing
   ansible.builtin.fail:
-    msg: "Environment data file not found: {{ env_data_file }} (root: {{ project_root }}, detection: {{ detection_method }})"
+    msg: >-
+      Environment data file not found: {{ env_data_file }}
+      (root: {{ project_root }}, detection: {{ detection_method }})
   when: not env_data_stat.stat.exists
   delegate_to: localhost
   run_once: true
@@ -179,7 +175,8 @@
 - name: Validate environments[env]
   ansible.builtin.fail:
     msg: >-
-      'environments.{{ env }}' missing in {{ env_data_file }}. Available: {{ environments.keys() | list if environments is defined else [] }}
+      'environments.{{ env }}' missing in {{ env_data_file }}.
+      Available: {{ environments.keys() | list if environments is defined else [] }}
   when: environments is not defined or (env not in environments)
   delegate_to: localhost
   run_once: true

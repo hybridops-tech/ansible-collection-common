@@ -53,7 +53,7 @@
     __hosts: "{{ ansible_play_hosts_all | default(ansible_play_hosts) }}"
   ansible.builtin.set_fact:
     __all_results: >-
-      {{ (__all_results | default({})) | combine({ item: (hostvars[item].test_results | default({})) }) }}
+      {{ (__all_results | default({})) | combine({item: (hostvars[item].test_results | default({}))}) }}
   loop: "{{ __hosts }}"
   when: hostvars[item].test_results is defined
   delegate_to: localhost

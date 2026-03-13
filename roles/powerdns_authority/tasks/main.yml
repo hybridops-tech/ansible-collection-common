@@ -17,7 +17,7 @@
     name: hybridops.common.docker_engine
   vars:
     docker_engine_state: "{{ 'present' if powerdns_state == 'present' else 'absent' }}"
-    docker_engine_enable: "{{ docker_engine_enable | bool }}"
+    docker_engine_enable: "{{ powerdns_manage_docker_engine | bool }}"
 
 - name: Compute PowerDNS role flags
   ansible.builtin.set_fact:

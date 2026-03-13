@@ -1,6 +1,6 @@
 ---
 # SPDX-License-Identifier: MIT-0
-# purpose: Test the gen_inventory role with an optional interactive env prompt; copies generated hosts.ini into a local output folder.
+# purpose: Test the gen_inventory role and copy generated hosts.ini into a local output folder.
 # adr: ADR-0600-environment-guard-framework
 # maintainer: HybridOps.Studio
 
@@ -13,71 +13,71 @@
     test_output_dir: "{{ [playbook_dir, 'copied_output'] | path_join }}"
 
   pre_tasks:
-  - name: Prompt for env when not provided and not running in CI
-    when:
-    - env is not defined or (env | string | trim) == ''
-    - (lookup('env', 'CI') | default('', true) | trim) == ''
-    ansible.builtin.pause:
-      prompt: "Enter environment (e.g., dev, staging, prod): "
-    register: _env_prompt
+    - name: Prompt for env when not provided and not running in CI
+      when:
+        - env is not defined or (env | string | trim) == ''
+        - (lookup('env', 'CI') | default('', true) | trim) == ''
+      ansible.builtin.pause:
+        prompt: "Enter environment (e.g., dev, staging, prod): "
+      register: _env_prompt
 
-  - name: Set env from prompt
-    when:
-    - env is not defined or (env | string | trim) == ''
-    - _env_prompt is defined
-    - (_env_prompt.user_input | string | trim) != ''
-    ansible.builtin.set_fact:
-      env: "{{ _env_prompt.user_input | lower | trim }}"
+    - name: Set env from prompt
+      when:
+        - env is not defined or (env | string | trim) == ''
+        - _env_prompt is defined
+        - (_env_prompt.user_input | string | trim) != ''
+      ansible.builtin.set_fact:
+        env: "{{ _env_prompt.user_input | lower | trim }}"
 
-  - name: Assert env is provided
-    ansible.builtin.assert:
-      that:
-      - env is defined
-      - (env | string | trim) != ''
-      fail_msg: "Variable 'env' is required (e.g., -e env=dev)."
+    - name: Assert env is provided
+      ansible.builtin.assert:
+        that:
+          - env is defined
+          - (env | string | trim) != ''
+        fail_msg: "Variable 'env' is required (e.g., -e env=dev)."
 
-  - name: Normalise env
-    ansible.builtin.set_fact:
-      env: "{{ env | lower | trim }}"
+    - name: Normalise env
+      ansible.builtin.set_fact:
+        env: "{{ env | lower | trim }}"
 
-  - name: Derive copied filename
-    ansible.builtin.set_fact:
-      copied_filename: "hosts.{{ env }}.ini"
+    - name: Derive copied filename
+      ansible.builtin.set_fact:
+        copied_filename: "hosts.{{ env }}.ini"
 
   tasks:
-  - name: Run gen_inventory role
-    ansible.builtin.include_role:
-      name: common/gen_inventory
+    - name: Run gen_inventory role
+      ansible.builtin.include_role:
+        name: hybridops.common.gen_inventory
 
-  - name: Stat generated inventory
-    ansible.builtin.stat:
-      path: "{{ inventory_file }}"
-    register: inv_file
+    - name: Stat generated inventory
+      ansible.builtin.stat:
+        path: "{{ inventory_file }}"
+      register: inv_file
 
-  - name: Fail if inventory file is missing
-    ansible.builtin.fail:
-      msg: "Inventory file not generated at {{ inventory_file }}"
-    when: not inv_file.stat.exists
+    - name: Fail if inventory file is missing
+      ansible.builtin.fail:
+        msg: "Inventory file not generated at {{ inventory_file }}"
+      when: not inv_file.stat.exists
 
-  - name: Ensure test_output_dir exists
-    ansible.builtin.file:
-      path: "{{ test_output_dir }}"
-      state: directory
-      mode: "0755"
+    - name: Ensure test_output_dir exists
+      ansible.builtin.file:
+        path: "{{ test_output_dir }}"
+        state: directory
+        mode: "0755"
 
-  - name: Copy inventory to test_output_dir
-    ansible.builtin.copy:
-      src: "{{ inventory_file }}"
-      dest: "{{ [test_output_dir, copied_filename] | path_join }}"
-      remote_src: true
-      mode: "0644"
+    - name: Copy inventory to test_output_dir
+      ansible.builtin.copy:
+        src: "{{ inventory_file }}"
+        dest: "{{ [test_output_dir, copied_filename] | path_join }}"
+        remote_src: true
+        mode: "0644"
 
-  - name: Stat copied artifact
-    ansible.builtin.stat:
-      path: "{{ [test_output_dir, copied_filename] | path_join }}"
-    register: copied
+    - name: Stat copied artifact
+      ansible.builtin.stat:
+        path: "{{ [test_output_dir, copied_filename] | path_join }}"
+      register: copied
 
-  - name: Fail if copied artifact is missing
-    ansible.builtin.fail:
-      msg: "Copied artifact missing at {{ [test_output_dir, copied_filename] | path_join }}"
-    when: not copied.stat.exists
+    - name: Fail if copied artifact is missing
+      ansible.builtin.fail:
+        msg: "Copied artifact missing at {{ [test_output_dir, copied_filename] | path_join }}"
+      when: not copied.stat.exists

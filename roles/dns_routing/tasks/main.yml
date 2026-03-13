@@ -85,21 +85,38 @@
   when: dns_state == "present"
   changed_when: false
 
-- name: Normalize PowerDNS CNAME targets
+- name: Reset normalized PowerDNS CNAME targets
   ansible.builtin.set_fact:
-    _powerdns_records_effective: >-
+    _powerdns_records_normalized: []
+  when:
+    - dns_state == "present"
+    - (record_type | upper) == "CNAME"
+  changed_when: false
+
+- name: Normalize each PowerDNS CNAME target
+  ansible.builtin.set_fact:
+    _powerdns_records_normalized: >-
       {{
-        [
-          {
-            'content': (
-              (item.content | string).endswith('.')
-              | ternary((item.content | string), ((item.content | string) ~ '.'))
-            ),
-            'disabled': false
-          }
-          for item in (_powerdns_records_effective | default([]))
-        ]
+        (_powerdns_records_normalized | default([]))
+        + [
+            {
+              'content': (
+                (item.content | string).endswith('.')
+                | ternary((item.content | string), ((item.content | string) ~ '.'))
+              ),
+              'disabled': false
+            }
+          ]
       }}
+  loop: "{{ _powerdns_records_effective | default([]) }}"
+  when:
+    - dns_state == "present"
+    - (record_type | upper) == "CNAME"
+  changed_when: false
+
+- name: Replace PowerDNS CNAME targets with normalized values
+  ansible.builtin.set_fact:
+    _powerdns_records_effective: "{{ _powerdns_records_normalized | default([]) }}"
   when:
     - dns_state == "present"
     - (record_type | upper) == "CNAME"

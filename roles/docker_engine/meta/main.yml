@@ -22,8 +22,8 @@ galaxy_info:
 
   galaxy_tags:
     - docker
-    - docker-engine
-    - docker-compose
+    - dockerengine
+    - dockercompose
     - cicd
     - platform
 

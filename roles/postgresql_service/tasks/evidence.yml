@@ -11,7 +11,7 @@
     group: root
     mode: "0750"
 
-- name: Capture service status
+- name: Capture service status  # noqa: command-instead-of-module
   ansible.builtin.command: "systemctl --no-pager -l status {{ item }}"
   loop: >-
     {{
