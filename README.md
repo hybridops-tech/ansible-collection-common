@@ -2,7 +2,7 @@
 
 Shared plugins and reusable platform roles for HybridOps.
 
-This collection carries the cross-cutting automation surface used across the current HybridOps runtime: environment guardrails, connectivity and inventory helpers, PostgreSQL service primitives, container runtime bootstrap, DNS and control-plane services, and VyOS-based WAN roles.
+This collection contains the cross-cutting roles used across the current HybridOps runtime: environment guardrails, connectivity and inventory helpers, PostgreSQL service primitives, container runtime bootstrap, DNS and control-plane services, and VyOS-based WAN roles.
 
 Role-level variables and assumptions are documented in each role's `README.md`. Broader operator guidance lives at [docs.hybridops.tech](https://docs.hybridops.tech).
 
@@ -10,7 +10,7 @@ Role-level variables and assumptions are documented in each role's `README.md`. 
 
 - Shared plugins under `plugins/` for use across `hybridops.*` collections.
 - Reusable roles for platform governance, connectivity, inventory shaping, container/bootstrap services, DNS control, and WAN edge configuration.
-- Control-node and target-node helpers intended to be consumed directly or through HybridOps modules and blueprints.
+- Control-node and target-node helpers that can be consumed directly or through HybridOps modules and blueprints.
 
 ## Roles
 
