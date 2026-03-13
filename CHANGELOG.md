@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - No unreleased changes yet.
 
+## [0.1.4] - 2026-03-13
+
+### Changed
+
+- Tightened the release surface for the published control-plane roles and collection metadata.
+- Cleaned the CI and lint path so release branches validate consistently before Galaxy publish.
+
 ## [0.1.3] - 2026-03-13
 
 ### Fixed
@@ -40,7 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Role-local `tests/` harnesses where appropriate.
 - `galaxy.yml` metadata for namespace `hybridops` and collection name `common`.
 
-[Unreleased]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.1...v0.1.2
 [0.1.0]: https://github.com/hybridops-tech/ansible-collection-common/releases/tag/v0.1.0
