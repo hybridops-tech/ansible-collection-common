@@ -15,9 +15,14 @@ exclude_paths:
   - build
   - output
   - tests/output
+  - roles/.draft
 
 skip_list:
   - yaml  # YAML style is enforced by yamllint via pre-commit.
+  # HybridOps roles intentionally expose service-oriented variable contracts.
+  # Enforcing a role-name prefix would create breaking churn without improving
+  # runtime safety for the shipped collection surface.
+  - var-naming[no-role-prefix]
 
 warn_list:
   - no-changed-when

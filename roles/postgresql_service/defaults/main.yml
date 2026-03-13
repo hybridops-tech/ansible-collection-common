@@ -1,6 +1,7 @@
+---
 # purpose: Defaults for HybridOps PostgreSQL service
 # adr: ADR-0101, ADR-0103
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 hybridops_postgres_version: null
 hybridops_postgres_log_dir: "log"
@@ -9,7 +10,7 @@ hybridops_postgres_users_no_log: true
 
 hybridops_postgres_port: 5432
 hybridops_postgres_listen_addresses:
-- "127.0.0.1"
+  - "127.0.0.1"
 
 hybridops_postgres_auth_method: "scram-sha-256"
 hybridops_postgres_allowed_clients: []
@@ -19,13 +20,28 @@ hybridops_postgres_users: []
 hybridops_postgres_privs: []
 
 hybridops_postgres_hba_local_defaults:
-- { type: local, database: all, user: postgres, auth_method: peer }
-- { type: local, database: all, user: all, auth_method: peer }
-- { type: host, database: all, user: all, address: "127.0.0.1/32", auth_method: "scram-sha-256" }
-- { type: host, database: all, user: all, address: "::1/128", auth_method: "scram-sha-256" }
+  - type: local
+    database: all
+    user: postgres
+    auth_method: peer
+  - type: local
+    database: all
+    user: all
+    auth_method: peer
+  - type: host
+    database: all
+    user: all
+    address: "127.0.0.1/32"
+    auth_method: "scram-sha-256"
+  - type: host
+    database: all
+    user: all
+    address: "::1/128"
+    auth_method: "scram-sha-256"
 
 hybridops_postgres_extra_conf:
-- { option: password_encryption, value: "scram-sha-256" }
+  - option: password_encryption
+    value: "scram-sha-256"
 
 hybridops_postgres_service_state: started
 hybridops_postgres_service_enabled: true

@@ -1,0 +1,19 @@
+[Unit]
+Description=HybridOps Edge Observability (Docker Compose)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Environment=EDGE_OBS_VIP={{ edge_obs_vip_address }}
+Environment=EDGE_OBS_VIP_IF={{ edge_obs_vip_interface }}
+ExecStartPre={{ edge_obs_guard_script_path }}
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory={{ edge_obs_root }}
+ExecStart=/usr/bin/docker compose -f {{ edge_obs_compose_path }} up -d
+ExecReload=/usr/bin/docker compose -f {{ edge_obs_compose_path }} up -d
+ExecStop=/usr/bin/docker compose -f {{ edge_obs_compose_path }} down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

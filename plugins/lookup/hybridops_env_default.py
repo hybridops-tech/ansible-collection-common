@@ -1,7 +1,35 @@
-# file: hybridops_env_default.py
-# purpose: Lookup plugin for environment variables with defaults
-# Maintainer: HybridOps.Studio
-# date: 2025-11-26
+DOCUMENTATION = r"""
+name: hybridops_env_default
+author: HybridOps.Tech
+short_description: Read an environment variable with an optional default
+description:
+  - Returns the value of an environment variable.
+  - If the variable is unset, returns the provided default value or an empty string.
+options:
+  _terms:
+    description:
+      - The environment variable name to read.
+      - Optionally pass a second term as the default value.
+    required: true
+"""
+
+EXAMPLES = r"""
+- name: Read HYOPS_ENV or default to dev
+  ansible.builtin.debug:
+    msg: "{{ lookup('hybridops.common.hybridops_env_default', 'HYOPS_ENV', 'dev') }}"
+
+- name: Read HOME without a default
+  ansible.builtin.debug:
+    msg: "{{ lookup('hybridops.common.hybridops_env_default', 'HOME') }}"
+"""
+
+RETURN = r"""
+_raw:
+  description:
+    - The resolved environment variable value.
+  type: list
+  elements: str
+"""
 
 import os
 from ansible.plugins.lookup import LookupBase

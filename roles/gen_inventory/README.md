@@ -5,7 +5,6 @@ Generate placeholder Ansible inventories for the Environment Guard Framework (EG
 [![License: MIT-0](https://img.shields.io/badge/License-MIT--0-blue.svg)](https://opensource.org/licenses/MIT-0)
 [![Ansible](https://img.shields.io/badge/ansible-2.13%2B-red.svg)](https://ansible.com)
 
-**Maintainer:** HybridOps.Studio  
 **Status:** Optional / legacy-friendly
 
 ---
@@ -14,7 +13,7 @@ Generate placeholder Ansible inventories for the Environment Guard Framework (EG
 
 `gen_inventory` creates **environment-specific inventories using placeholder addresses** (for example `XX.XX.XX.00`) that are later resolved by `ip_mapper`.
 
-In the current HybridOps.Studio design, **NetBox is the primary source of truth for inventories and IPAM**. This role is retained for:
+In the current HybridOps design, **NetBox is the primary source of truth for inventories and IPAM**. This role is retained for:
 
 - Homelab and training scenarios
 - EGF pipeline demos where NetBox is not yet available
@@ -106,15 +105,15 @@ In NetBox-based environments, prefer:
 
 - **ADR-0600 – Environment Guard Framework**  
   How `gen_inventory` fits into the `env_guard → host_selector → ip_mapper → connectivity_test` pipeline.  
-  [Read ADR-0600](https://docs.hybridops.studio/adr/ADR-0600-environment-guard-framework/)
+  [Read ADR-0600](https://docs.hybridops.tech/adr/ADR-0600-environment-guard-framework/)
 
 - **ADR-0002 – NetBox-Driven Inventory**  
   Why NetBox is the primary source of truth and when `gen_inventory` is still used as a bridge.  
-  [Read ADR-0002](https://docs.hybridops.studio/adr/ADR-0002-netbox-driven-inventory/)
+  [Read ADR-0002](https://docs.hybridops.tech/adr/ADR-0002-netbox-driven-inventory/)
 
 - **Ansible role index**  
   Position of `gen_inventory` within the HybridOps collections and how it’s used in pipelines.  
-  [Ansible role index](https://docs.hybridops.studio/guides/reference/ansible-role-index/)
+  [Ansible role index](https://docs.hybridops.tech/guides/reference/ansible-role-index/)
 
   ---
 
@@ -123,5 +122,5 @@ In NetBox-based environments, prefer:
 - Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)  
 - Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-See the [HybridOps.Studio licensing overview](https://docs.hybridops.studio/briefings/legal/licensing/)
+See the [HybridOps licensing overview](https://docs.hybridops.tech/briefings/legal/licensing/)
 for project-wide licence details, including branding and trademark notes.

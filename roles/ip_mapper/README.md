@@ -5,8 +5,6 @@
 [![License: MIT-0](https://img.shields.io/badge/License-MIT--0-blue.svg)](https://opensource.org/licenses/MIT-0)
 [![Ansible](https://img.shields.io/badge/ansible-2.13%2B-red.svg)](https://ansible.com)
 
-**Maintainer:** HybridOps.Studio
-
 > **Status:** Bridge role. In NetBox‑first deployments, this role becomes **optional** or a **fallback**.
 > It remains for environments still migrating from file/TF outputs to NetBox as the single source of truth.
 
@@ -151,9 +149,9 @@ Common test assertions:
 
 ## Further documentation
 
-- [ADR-0600 – Environment Guard Framework](https://docs.hybridops.studio/adr/ADR-0600-environment-guard-framework/)
-- [ADR-0002 – Source of Truth: NetBox-Driven Inventory](https://docs.hybridops.studio/adr/ADR-0002-netbox-driven-inventory/)
-- [Ansible role index](https://docs.hybridops.studio/guides/reference/ansible-role-index/)
+- [ADR-0600 – Environment Guard Framework](https://docs.hybridops.tech/adr/ADR-0600-environment-guard-framework/)
+- [ADR-0002 – Source of Truth: NetBox-Driven Inventory](https://docs.hybridops.tech/adr/ADR-0002-netbox-driven-inventory/)
+- [Ansible role index](https://docs.hybridops.tech/guides/reference/ansible-role-index/)
 
 ---
 
@@ -162,5 +160,5 @@ Common test assertions:
 - Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)  
 - Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-See the [HybridOps.Studio licensing overview](https://docs.hybridops.studio/briefings/legal/licensing/)
+See the [HybridOps licensing overview](https://docs.hybridops.tech/briefings/legal/licensing/)
 for project-wide licence details, including branding and trademark notes.

@@ -19,7 +19,9 @@
 - name: Fallback correlation ID if uuidgen is unavailable
   ansible.builtin.set_fact:
     env_guard_correlation_id: >-
-      envguard-{{ ansible_date_time.epoch }}-{{ lookup('ansible.builtin.password', '/dev/null', length=12, chars='hex') }}
+      envguard-{{ ansible_date_time.epoch }}-{{
+        lookup('ansible.builtin.password', '/dev/null', length=12, chars='hex')
+      }}
   when: env_guard_correlation_id is not defined
   run_once: true
   delegate_to: localhost
@@ -64,19 +66,19 @@
       dev
         Risk:      {{ env_guard.environments.dev.risk_level }}/10
         Approval:  {{ 'Manual required' if env_guard.environments.dev.approval_required else 'Auto-approved' }}
-        Window:    {{ env_guard.environments.dev.deployment_window | replace('_',' ') | title }}
+        Window:    {{ env_guard.environments.dev.deployment_window | replace('_', ' ') | title }}
         Impact:    Development systems
 
       staging
         Risk:      {{ env_guard.environments.staging.risk_level }}/10
         Approval:  {{ 'Manual required' if env_guard.environments.staging.approval_required else 'Auto-approved' }}
-        Window:    {{ env_guard.environments.staging.deployment_window | replace('_',' ') | title }}
+        Window:    {{ env_guard.environments.staging.deployment_window | replace('_', ' ') | title }}
         Impact:    Pre-production validation
 
       prod
         Risk:      {{ env_guard.environments.prod.risk_level }}/10
         Approval:  {{ 'Manual required' if env_guard.environments.prod.approval_required else 'Auto-approved' }}
-        Window:    {{ env_guard.environments.prod.deployment_window | replace('_',' ') | title }}
+        Window:    {{ env_guard.environments.prod.deployment_window | replace('_', ' ') | title }}
         Impact:    Production workloads
 
       Enter environment (dev/staging/prod) [default: dev]:
@@ -109,46 +111,45 @@
     target_host_count: "{{ ansible_play_hosts | length }}"
     env_upper: "{{ env | upper }}"
 
-- name: Check deployment timing for higher-risk environments
-  block:
-  - name: Capture current time components
-    ansible.builtin.set_fact:
-      current_weekday: "{{ ansible_date_time.weekday }}"
-      current_hour: "{{ ansible_date_time.hour | int }}"
-      weekday_names:
-      - Monday
-      - Tuesday
-      - Wednesday
-      - Thursday
-      - Friday
-      - Saturday
-      - Sunday
-
-  - name: Calculate derived time values
-    ansible.builtin.set_fact:
-      current_day_name: "{{ weekday_names[current_weekday | int] }}"
-      is_weekend: "{{ (current_weekday | int) >= 5 }}"
-
-  - name: Calculate maintenance window status
-    ansible.builtin.set_fact:
-      in_maintenance_window: >-
-        {{ is_weekend and (current_hour >= 10 and current_hour <= 16) }}
-
-  - name: Deployment timing summary
-    ansible.builtin.debug:
-      msg: |
-        DEPLOYMENT TIMING
-        {{ _separator }}
-        Current time (UTC): {{ current_day_name }} {{ ansible_date_time.hour }}:{{ ansible_date_time.minute }}
-        Environment:        {{ env_upper }}
-        Preferred window:   {{ current_env_config.deployment_window }}
-        Weekend:            {{ 'Yes' if is_weekend else 'No' }}
-        In window:          {{ 'Yes' if (env != 'prod' or in_maintenance_window) else 'No' }}
-        {% if env == 'prod' and not in_maintenance_window %}
-        Note: production changes are recommended during weekend maintenance windows (10:00–16:00 UTC).
-        {% endif %}
-        {{ _separator }}
+- name: Check deployment timing for higher-risk environments  # noqa: jinja[spacing]
   when: env in ["staging", "prod"]
+  block:
+    - name: Capture current time components
+      ansible.builtin.set_fact:
+        current_weekday: "{{ ansible_date_time.weekday }}"
+        current_hour: "{{ ansible_date_time.hour | int }}"
+        weekday_names:
+          - Monday
+          - Tuesday
+          - Wednesday
+          - Thursday
+          - Friday
+          - Saturday
+          - Sunday
+
+    - name: Calculate derived time values
+      ansible.builtin.set_fact:
+        current_day_name: "{{ weekday_names[current_weekday | int] }}"
+        is_weekend: "{{ (current_weekday | int) >= 5 }}"
+
+    - name: Calculate maintenance window status
+      ansible.builtin.set_fact:
+        in_maintenance_window: >-
+          {{ is_weekend and (current_hour >= 10 and current_hour <= 16) }}
+
+    - name: Deployment timing summary
+      ansible.builtin.debug:
+        msg: |
+          DEPLOYMENT TIMING
+          {{ _separator }}
+          Current time (UTC): {{ current_day_name }} {{ ansible_date_time.hour }}:{{ ansible_date_time.minute }}
+          Environment:        {{ env_upper }}
+          Preferred window:   {{ current_env_config.deployment_window }}
+          Weekend:            {{ 'Yes' if is_weekend else 'No' }}
+          In window:          {{ 'Yes' if (env != 'prod' or in_maintenance_window) else 'No' }}
+          {% if env == 'prod' and not in_maintenance_window %}
+          Note: production changes are recommended during weekend maintenance windows (10:00–16:00 UTC).
+          {% endif %}
 
 - name: Production deployment summary
   ansible.builtin.debug:
@@ -206,9 +207,9 @@
       Justification:         {{ production_justification.user_input | default('Not provided') }}
       Correlation ID:        {{ env_guard_correlation_id }}
   when:
-  - requires_approval | bool
-  - production_approval is defined
-  - production_approval.user_input != "DEPLOY"
+    - requires_approval | bool
+    - production_approval is defined
+    - production_approval.user_input != "DEPLOY"
 
 - name: Environment guard validation complete
   ansible.builtin.debug:

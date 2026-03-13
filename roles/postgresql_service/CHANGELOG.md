@@ -30,4 +30,3 @@ The format is based on *Keep a Changelog*, and this role follows *Semantic Versi
   - Service control (`started`, `enabled`)
 - Input validation tasks with guardrails for remote listen configuration.
 - Minimal smoke test playbook for CI verification.
-

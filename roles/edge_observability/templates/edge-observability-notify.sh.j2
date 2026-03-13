@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+STATE="${1:-}"
+case "$STATE" in
+  master)
+    systemctl start edge-observability
+    ;;
+  backup|fault|stop)
+    systemctl stop edge-observability
+    ;;
+  *)
+    echo "Usage: $0 {master|backup|fault|stop}" >&2
+    exit 1
+    ;;
+esac

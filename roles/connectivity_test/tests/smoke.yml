@@ -9,11 +9,11 @@
   gather_facts: false
 
   vars:
-    show_test_targets: true # test override; rest comes from role defaults
+    show_test_targets: true  # test override; rest comes from role defaults
     ping_count: 1
     connectivity_timeout: 3
 
   roles:
-  # Important: short name only – resolved via ANSIBLE_ROLES_PATH
-  - role: hybridops.common.connectivity_test
-    tags: [ smoke ]
+    # Important: short name only – resolved via ANSIBLE_ROLES_PATH
+    - role: hybridops.common.connectivity_test
+      tags: [smoke]

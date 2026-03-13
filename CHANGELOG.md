@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - No unreleased changes yet.
 
+## [0.1.3] - 2026-03-13
+
+### Fixed
+
+- Added lookup-plugin documentation for `hybridops_env_default` so Galaxy import can inspect the collection cleanly.
+- Added missing role root READMEs for the live PowerDNS and VyOS WAN/site-extension roles.
+
+## [0.1.2] - 2026-03-10
+
+### Changed
+
+- Added repository-local `yamllint` configuration so release and CI checks run consistently.
+- Normalized YAML in the live WAN and site-extension roles to keep Galaxy release branches lint-clean.
+
 ## [0.1.0] - 2026-01-02
 
 ### Added
@@ -22,9 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ip_mapper`
   - `linux_harden_ssh`
   - `linux_user_management`
-- Shared plugin surface (filters, lookups, modules, `module_utils`) for HybridOps.Studio.
+- Shared plugin surface (filters, lookups, modules, `module_utils`) for HybridOps.Tech.
 - Role-local `tests/` harnesses where appropriate.
 - `galaxy.yml` metadata for namespace `hybridops` and collection name `common`.
 
-[Unreleased]: https://github.com/hybridops-studio/ansible-collection-common/compare/v0.1.0-common...HEAD
-[0.1.0]: https://github.com/hybridops-studio/ansible-collection-common/releases/tag/v0.1.0-common
+[Unreleased]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.1...v0.1.2
+[0.1.0]: https://github.com/hybridops-tech/ansible-collection-common/releases/tag/v0.1.0
