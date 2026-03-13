@@ -64,4 +64,3 @@ edge_obs_vip_address: ""
 edge_obs_vip_interface: ""
 edge_obs_notify_script_path: "/usr/local/bin/edge-observability-notify"
 edge_obs_guard_script_path: "/usr/local/bin/edge-observability-guard"
-
