@@ -1,6 +1,7 @@
+---
 # purpose: Capture evidence for PostgreSQL deployment and health
 # adr: ADR-0000 (evidence strategy), ADR-0103
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Ensure evidence directory exists
   ansible.builtin.file:
@@ -12,7 +13,15 @@
 
 - name: Capture service status
   ansible.builtin.command: "systemctl --no-pager -l status {{ item }}"
-  loop: "{{ ['postgresql'] + (['postgresql-' ~ hybridops_postgres_version] if (hybridops_postgres_version is string and hybridops_postgres_version | length > 0) else []) }}"
+  loop: >-
+    {{
+      ['postgresql']
+      + (
+          ['postgresql-' ~ hybridops_postgres_version]
+          if (hybridops_postgres_version is string and (hybridops_postgres_version | length) > 0)
+          else []
+        )
+    }}
   register: _pg_status
   changed_when: false
   failed_when: false
@@ -41,16 +50,19 @@
   register: _pg_ready
   changed_when: false
   failed_when: false
+  when: (_pg_isready_bin.rc | default(1)) == 0
 
 - name: Write readiness
   ansible.builtin.copy:
     dest: "{{ hybridops_evidence_dir }}/pg_isready.txt"
-    content: "{{ _pg_ready.stdout | default('') }}
+    content: |-
+      {{ _pg_ready.stdout | default('') }}
 
-      {{ _pg_ready.stderr | default('') }}"
+      {{ _pg_ready.stderr | default('') }}
     owner: root
     group: root
     mode: "0640"
+  when: (_pg_isready_bin.rc | default(1)) == 0
 
 - name: Write evidence timestamp
   ansible.builtin.copy:
