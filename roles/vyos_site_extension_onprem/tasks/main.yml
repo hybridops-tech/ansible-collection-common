@@ -13,27 +13,30 @@
 
 - name: Preflight | resolve site-extension PSK from environment
   ansible.builtin.set_fact:
-    _site_extension_psk: "{{ lookup('ansible.builtin.env', site_extension_psk_env) | default('', true) | string }}"
+    vyos_site_extension_onprem_psk: >-
+      {{ lookup('ansible.builtin.env', site_extension_psk_env)
+         | default('', true)
+         | string }}
   no_log: true
   when: vyos_site_extension_state == "present"
 
 - name: Preflight | assert site-extension PSK available
   ansible.builtin.assert:
     that:
-      - _site_extension_psk | length > 0
+      - vyos_site_extension_onprem_psk | length > 0
     fail_msg: "Required env {{ site_extension_psk_env }} is missing for VyOS site-extension configuration."
   no_log: true
   when: vyos_site_extension_state == "present"
 
 - name: Preflight | resolve inline on-prem VyOS SSH private key from environment
   ansible.builtin.set_fact:
-    _onprem_ssh_private_key_inline: ""
+    vyos_site_extension_onprem_ssh_private_key_inline: ""
   no_log: true
   when: vyos_site_extension_state == "present"
 
 - name: Preflight | load inline on-prem VyOS SSH private key from configured environment variable
   ansible.builtin.set_fact:
-    _onprem_ssh_private_key_inline: >-
+    vyos_site_extension_onprem_ssh_private_key_inline: >-
       {{ (lookup('ansible.builtin.env', onprem_ssh_private_key_env) | default('', true) | string)
          | regex_replace('\\n', '\n')
          | regex_replace('\r', '') }}
@@ -44,7 +47,7 @@
 
 - name: Preflight | set effective on-prem SSH key path
   ansible.builtin.set_fact:
-    _onprem_ssh_key_effective: "{{ onprem_ssh_key_file }}"
+    vyos_site_extension_onprem_ssh_key_effective: "{{ onprem_ssh_key_file }}"
   changed_when: false
   when: vyos_site_extension_state == "present"
 
@@ -52,40 +55,40 @@
   ansible.builtin.copy:
     dest: "/tmp/hyops-vyos-siteext-onprem.key"
     mode: "0600"
-    content: "{{ _onprem_ssh_private_key_inline }}"
+    content: "{{ vyos_site_extension_onprem_ssh_private_key_inline }}"
   no_log: true
   when:
     - vyos_site_extension_state == "present"
-    - _onprem_ssh_private_key_inline | length > 0
+    - vyos_site_extension_onprem_ssh_private_key_inline | length > 0
 
 - name: Preflight | validate inline on-prem VyOS SSH private key format
   ansible.builtin.command:
     cmd: ssh-keygen -y -f /tmp/hyops-vyos-siteext-onprem.key
-  register: _onprem_inline_key_check
+  register: vyos_site_extension_onprem_inline_key_check
   changed_when: false
-  failed_when: _onprem_inline_key_check.rc != 0
+  failed_when: vyos_site_extension_onprem_inline_key_check.rc != 0
   when:
     - vyos_site_extension_state == "present"
-    - _onprem_ssh_private_key_inline | length > 0
+    - vyos_site_extension_onprem_ssh_private_key_inline | length > 0
 
 - name: Preflight | switch to transient on-prem SSH key path when inline key is provided
   ansible.builtin.set_fact:
-    _onprem_ssh_key_effective: "/tmp/hyops-vyos-siteext-onprem.key"
+    vyos_site_extension_onprem_ssh_key_effective: "/tmp/hyops-vyos-siteext-onprem.key"
   changed_when: false
   when:
     - vyos_site_extension_state == "present"
-    - _onprem_ssh_private_key_inline | length > 0
+    - vyos_site_extension_onprem_ssh_private_key_inline | length > 0
 
 - name: Preflight | check effective on-prem SSH key path exists
   ansible.builtin.stat:
-    path: "{{ _onprem_ssh_key_effective }}"
-  register: _onprem_ssh_key_stat
+    path: "{{ vyos_site_extension_onprem_ssh_key_effective }}"
+  register: vyos_site_extension_onprem_ssh_key_stat
   when: vyos_site_extension_state == "present"
 
 - name: Preflight | assert effective on-prem SSH key is available
   ansible.builtin.assert:
     that:
-      - _onprem_ssh_key_stat.stat.exists | default(false)
+      - vyos_site_extension_onprem_ssh_key_stat.stat.exists | default(false)
     fail_msg: >-
       On-prem VyOS SSH key is unavailable. Ensure inputs.onprem_ssh_key_file exists locally,
       or provide env {{ onprem_ssh_private_key_env | default('ONPREM_EDGE_SSH_PRIVATE_KEY') }}.
@@ -93,7 +96,7 @@
 
 - name: Build on-prem edge peer profiles
   ansible.builtin.set_fact:
-    _onprem_edge_peers:
+    vyos_site_extension_onprem_edge_peers:
       - key: "edge01"
         edge_name: "{{ edge01_name }}"
         public_ip: "{{ edge01_public_ip }}"
@@ -131,7 +134,7 @@
       - item.inside_peer_ip | length > 0
       - item.tunnel_ifname | length > 0
     fail_msg: "On-prem site-extension profile {{ item.key }} is missing required fields"
-  loop: "{{ _onprem_edge_peers }}"
+  loop: "{{ vyos_site_extension_onprem_edge_peers }}"
   loop_control:
     label: "{{ item.key }}"
 
@@ -151,7 +154,7 @@
 - name: Preflight | verify on-prem edge SSH authentication
   ansible.builtin.shell: |
     set -euo pipefail
-    ssh_key="{{ _onprem_ssh_key_effective }}"
+    ssh_key="{{ vyos_site_extension_onprem_ssh_key_effective }}"
     ssh {{ onprem_ssh_opts | join(' ') }} \
       -p "{{ onprem_ssh_port | int }}" \
       -i "$ssh_key" \
@@ -159,17 +162,17 @@
       "echo HYOPS_ONPREM_AUTH_OK"
   args:
     executable: /bin/bash
-  register: _onprem_ssh_auth
+  register: vyos_site_extension_onprem_ssh_auth
   changed_when: false
   failed_when:
-    - _onprem_ssh_auth.rc != 0
-    - "'HYOPS_ONPREM_AUTH_OK' not in (_onprem_ssh_auth.stdout | default(''))"
+    - vyos_site_extension_onprem_ssh_auth.rc != 0
+    - "'HYOPS_ONPREM_AUTH_OK' not in (vyos_site_extension_onprem_ssh_auth.stdout | default(''))"
   when: vyos_site_extension_state == "present"
 
 - name: Preflight | verify public peer route path or require explicit next hop
   ansible.builtin.shell: |
     set -euo pipefail
-    ssh_key="{{ _onprem_ssh_key_effective }}"
+    ssh_key="{{ vyos_site_extension_onprem_ssh_key_effective }}"
     ssh {{ onprem_ssh_opts | join(' ') }} \
       -p "{{ onprem_ssh_port | int }}" \
       -i "$ssh_key" \
@@ -178,7 +181,7 @@
     set -euo pipefail
     bind_if="{{ onprem_bind_interface }}"
     explicit_nh="{{ public_peer_route_next_hop | default('', true) | trim }}"
-    {% for item in _onprem_edge_peers %}
+    {% for item in vyos_site_extension_onprem_edge_peers %}
     route_line="$(ip route get {{ item.public_ip }} 2>/dev/null || true)"
     [ -n "$route_line" ] || {
       echo "missing route lookup for {{ item.public_ip }}" >&2
@@ -200,14 +203,14 @@
     HYOPS_EOF
   args:
     executable: /bin/bash
-  register: _onprem_public_peer_route_check
+  register: vyos_site_extension_onprem_public_peer_route_check
   changed_when: false
   when: vyos_site_extension_state == "present"
 
 - name: Apply on-prem site-extension config (present)
   ansible.builtin.shell: |
     set -euo pipefail
-    ssh_key="{{ _onprem_ssh_key_effective }}"
+    ssh_key="{{ vyos_site_extension_onprem_ssh_key_effective }}"
     ssh {{ onprem_ssh_opts | join(' ') }} \
       -p "{{ onprem_ssh_port | int }}" \
       -i "$ssh_key" \
@@ -233,24 +236,24 @@
 
     delete vpn ipsec authentication psk HYOPS-SITEEXT-PSK
     set vpn ipsec authentication psk HYOPS-SITEEXT-PSK id '{{ onprem_local_id }}'
-    {% for item in _onprem_edge_peers %}
+    {% for item in vyos_site_extension_onprem_edge_peers %}
     set vpn ipsec authentication psk HYOPS-SITEEXT-PSK id '{{ item.remote_id }}'
     {% endfor %}
-    set vpn ipsec authentication psk HYOPS-SITEEXT-PSK secret '{{ _site_extension_psk }}'
+    set vpn ipsec authentication psk HYOPS-SITEEXT-PSK secret '{{ vyos_site_extension_onprem_psk }}'
 
     {% for prefix in static_route_prefixes %}
     delete protocols static route '{{ prefix }}'
     set protocols static route '{{ prefix }}' next-hop '{{ internal_route_next_hop }}'
     {% endfor %}
 
-    {% for item in _onprem_edge_peers %}
+    {% for item in vyos_site_extension_onprem_edge_peers %}
     delete protocols static route '{{ item.public_ip }}/32'
     {% if public_peer_route_next_hop | default('', true) | string | trim | length > 0 %}
     set protocols static route '{{ item.public_ip }}/32' next-hop '{{ public_peer_route_next_hop }}'
     {% endif %}
     {% endfor %}
 
-    {% for item in _onprem_edge_peers %}
+    {% for item in vyos_site_extension_onprem_edge_peers %}
     delete interfaces vti {{ item.tunnel_ifname }}
     set interfaces vti {{ item.tunnel_ifname }} description '{{ item.tunnel_name }}'
     set interfaces vti {{ item.tunnel_ifname }} address '{{ item.inside_local_ip }}/{{ inside_prefix_len | int }}'
@@ -321,13 +324,14 @@
     VYOS_EOF
   args:
     executable: /bin/bash
+  changed_when: true
   no_log: "{{ vyos_site_extension_no_log_sensitive | bool }}"
   when: vyos_site_extension_state == "present"
 
 - name: Remove on-prem site-extension config (absent)
   ansible.builtin.shell: |
     set -euo pipefail
-    ssh_key="{{ _onprem_ssh_key_effective | default(onprem_ssh_key_file) }}"
+    ssh_key="{{ vyos_site_extension_onprem_ssh_key_effective | default(onprem_ssh_key_file) }}"
     ssh {{ onprem_ssh_opts | join(' ') }} \
       -p "{{ onprem_ssh_port | int }}" \
       -i "$ssh_key" \
@@ -357,12 +361,13 @@
     VYOS_EOF
   args:
     executable: /bin/bash
+  changed_when: true
   when: vyos_site_extension_state == "absent"
 
 - name: Collect on-prem site-extension live status (present)
   ansible.builtin.shell: |
     set -euo pipefail
-    ssh_key="{{ _onprem_ssh_key_effective }}"
+    ssh_key="{{ vyos_site_extension_onprem_ssh_key_effective }}"
     ssh {{ onprem_ssh_opts | join(' ') }} \
       -p "{{ onprem_ssh_port | int }}" \
       -i "$ssh_key" \
@@ -395,11 +400,11 @@
     HYOPS_EOF
   args:
     executable: /bin/bash
-  register: _onprem_siteext_status
+  register: vyos_site_extension_onprem_siteext_status
   changed_when: false
   retries: "{{ status_convergence_retries | int }}"
   delay: "{{ status_convergence_delay_s | int }}"
-  until: _onprem_siteext_status.rc == 0
+  until: vyos_site_extension_onprem_siteext_status.rc == 0
   when:
     - vyos_site_extension_state == "present"
     - validate_post_apply | bool
@@ -409,28 +414,28 @@
     path: "/tmp/hyops-vyos-siteext-onprem.key"
     state: absent
   no_log: true
-  when: _onprem_ssh_private_key_inline | default('') | length > 0
+  when: vyos_site_extension_onprem_ssh_private_key_inline | default('') | length > 0
 
 - name: Assert on-prem site-extension live status (present)
   ansible.builtin.assert:
     that:
-      - _onprem_siteext_status.rc == 0
+      - vyos_site_extension_onprem_siteext_status.rc == 0
       - >-
-        _onprem_siteext_status.stdout is search(
+        vyos_site_extension_onprem_siteext_status.stdout is search(
           '^' ~ edge01_tunnel_ifname ~ '(@.*)?\\s+(UP|UNKNOWN)\\b',
           multiline=True
         )
       - >-
-        _onprem_siteext_status.stdout is search(
+        vyos_site_extension_onprem_siteext_status.stdout is search(
           '^' ~ edge02_tunnel_ifname ~ '(@.*)?\\s+(UP|UNKNOWN)\\b',
           multiline=True
         )
       - >-
-        _onprem_siteext_status.stdout is search(
+        vyos_site_extension_onprem_siteext_status.stdout is search(
           'BGP_STATE_' ~ (edge01_inside_peer_ip | replace('.', '_')) ~ '='
         )
       - >-
-        _onprem_siteext_status.stdout is search(
+        vyos_site_extension_onprem_siteext_status.stdout is search(
           'BGP_STATE_' ~ (edge02_inside_peer_ip | replace('.', '_')) ~ '='
         )
     fail_msg: >-
