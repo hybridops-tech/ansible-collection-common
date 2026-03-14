@@ -153,43 +153,6 @@
           {% endif %}
           {{ _separator }}
   when: env in ["staging", "prod"]
-  block:
-    - name: Capture current time components
-      ansible.builtin.set_fact:
-        current_weekday: "{{ ansible_date_time.weekday }}"
-        current_hour: "{{ ansible_date_time.hour | int }}"
-        weekday_names:
-          - Monday
-          - Tuesday
-          - Wednesday
-          - Thursday
-          - Friday
-          - Saturday
-          - Sunday
-
-    - name: Calculate derived time values
-      ansible.builtin.set_fact:
-        current_day_name: "{{ weekday_names[current_weekday | int] }}"
-        is_weekend: "{{ (current_weekday | int) >= 5 }}"
-
-    - name: Calculate maintenance window status
-      ansible.builtin.set_fact:
-        in_maintenance_window: >-
-          {{ is_weekend and (current_hour >= 10 and current_hour <= 16) }}
-
-    - name: Deployment timing summary
-      ansible.builtin.debug:
-        msg: |
-          DEPLOYMENT TIMING
-          {{ _separator }}
-          Current time (UTC): {{ current_day_name }} {{ ansible_date_time.hour }}:{{ ansible_date_time.minute }}
-          Environment:        {{ env_upper }}
-          Preferred window:   {{ current_env_config.deployment_window }}
-          Weekend:            {{ 'Yes' if is_weekend else 'No' }}
-          In window:          {{ 'Yes' if (env != 'prod' or in_maintenance_window) else 'No' }}
-          {% if env == 'prod' and not in_maintenance_window %}
-          Note: production changes are recommended during weekend maintenance windows (10:00–16:00 UTC).
-          {% endif %}
 
 - name: Production deployment summary
   ansible.builtin.debug:

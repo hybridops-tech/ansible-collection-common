@@ -107,39 +107,6 @@
       run_once: true
   delegate_to: localhost
   run_once: true
-  block:
-    - name: Stat markers
-      ansible.builtin.stat:
-        path: "{{ item.0.path }}/{{ inventories_dir_name }}/{{ item.1 }}"
-      register: _marker_stats
-      loop: "{{ root_candidates | product(inventories_marker_candidates) | list }}"
-      loop_control:
-        label: "{{ item.0.label }} -> {{ item.1 }}"
-
-    - name: Select project root by first marker match
-      ansible.builtin.set_fact:
-        project_root: >-
-          {{
-            (
-              _marker_stats.results
-              | selectattr('stat.exists')
-              | list
-              | map(attribute='item.0.path')
-              | list
-              | first
-            )
-            | default('')
-          }}
-        detection_method: >-
-          {{
-            (
-              _marker_stats.results
-              | selectattr('stat.exists')
-              | list
-              | length
-            )
-            | ternary('inventories_marker', '')
-          }}
 
 - name: Resolve project root by inventories directory or fallback
   when: (project_root | default('')) | length == 0
