@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - No unreleased changes yet.
 
+## [0.1.5] - 2026-03-14
+
+### Changed
+
+- Prepared the collection runtime inside CI before direct `ansible-lint` so smoke playbooks resolve `hybridops.common` consistently on GitHub runners.
+
+### Fixed
+
+- Completed the remaining fatal lint and metadata issues that were still surfacing after the previous Galaxy cut.
+- Corrected the changelog compare links to the `hybridops-tech` repository namespace.
+
 ## [0.1.4] - 2026-03-13
 
 ### Changed
@@ -30,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added repository-local `yamllint` configuration so release and CI checks run consistently.
 - Normalized YAML in the live WAN and site-extension roles to keep Galaxy release branches lint-clean.
 
-## [0.1.0] - 2026-01-02
+## 0.1.0 - 2026-01-02
 
 ### Added
 
@@ -47,5 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Role-local `tests/` harnesses where appropriate.
 - `galaxy.yml` metadata for namespace `hybridops` and collection name `common`.
 
-[Unreleased]: https://github.com/hybridops-studio/ansible-collection-common/compare/v0.1.0-common...HEAD
-[0.1.0]: https://github.com/hybridops-studio/ansible-collection-common/releases/tag/v0.1.0-common
+[Unreleased]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.4...v0.1.5
+[0.1.4]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.3...v0.1.4
+[0.1.3]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/hybridops-tech/ansible-collection-common/compare/v0.1.1...v0.1.2
