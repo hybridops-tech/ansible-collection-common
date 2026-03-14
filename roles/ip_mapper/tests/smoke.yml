@@ -30,7 +30,7 @@
         fail_msg: "Invalid environment '{{ validated_env }}'. Must be dev, staging, or prod."
 
   roles:
-    - role: ../../
+    - role: hybridops.common.ip_mapper
 
   post_tasks:
     - name: Verify IP mapping

@@ -26,7 +26,7 @@
       when: (validated_env | default('') | length) == 0
 
   roles:
-    - role: ../../  # role under test
+    - role: hybridops.common.host_selector
 
   post_tasks:
     - name: Display selected hosts

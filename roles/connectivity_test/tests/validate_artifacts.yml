@@ -107,4 +107,4 @@
         - "{{ run_dir }}/{{ json_name }}"
         - "{{ run_dir }}/{{ jsonl_name }}"
       when: copy_to_output
-      ignore_errors: true
+      failed_when: false

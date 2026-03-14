@@ -48,7 +48,7 @@
   tasks:
     - name: Run gen_inventory role
       ansible.builtin.include_role:
-        name: common/gen_inventory
+        name: hybridops.common.gen_inventory
 
     - name: Stat generated inventory
       ansible.builtin.stat:

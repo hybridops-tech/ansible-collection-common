@@ -21,7 +21,7 @@
 
     - name: Run gen_inventory role
       ansible.builtin.include_role:
-        name: common/gen_inventory
+        name: hybridops.common.gen_inventory
 
     - name: Assert inventory file exists
       ansible.builtin.stat:

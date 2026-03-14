@@ -114,6 +114,7 @@
     env_upper: "{{ env | upper }}"
 
 - name: Check deployment timing for higher-risk environments
+  when: env in ["staging", "prod"]
   block:
     - name: Capture current time components
       ansible.builtin.set_fact:
@@ -152,8 +153,6 @@
           Note: production changes are recommended during weekend maintenance windows (10:00–16:00 UTC).
           {% endif %}
           {{ _separator }}
-  when: env in ["staging", "prod"]
-
 - name: Production deployment summary
   ansible.builtin.debug:
     msg: |

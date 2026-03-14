@@ -68,6 +68,8 @@
   run_once: true
 
 - name: Scan markers in candidate inventories
+  delegate_to: localhost
+  run_once: true
   block:
     - name: Stat markers
       ansible.builtin.stat:
@@ -105,9 +107,6 @@
           }}
       delegate_to: localhost
       run_once: true
-  delegate_to: localhost
-  run_once: true
-
 - name: Resolve project root by inventories directory or fallback
   when: (project_root | default('')) | length == 0
   block:

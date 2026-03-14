@@ -154,4 +154,4 @@
         - "{{ env_guard_run_dir }}/{{ env_guard.audit.log_file | default('env_guard_audit.log') }}"
         - "{{ (report_files.files | sort(attribute='mtime', reverse=True) | first).path }}"
       when: copy_to_output
-      ignore_errors: true
+      failed_when: false
