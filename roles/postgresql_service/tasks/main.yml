@@ -1,6 +1,7 @@
+---
 # purpose: Install and configure PostgreSQL via upstream role
 # adr: ADR-0101, ADR-0103
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Validate inputs
   ansible.builtin.include_tasks: validate.yml
@@ -8,12 +9,12 @@
 - name: Build upstream postgresql.conf options
   ansible.builtin.set_fact:
     _hybridops_postgres_conf:
-    - option: port
-      value: "{{ hybridops_postgres_port }}"
-    - option: listen_addresses
-      value: "{{ hybridops_postgres_listen_addresses | join(',') }}"
-    - option: log_directory
-      value: "{{ hybridops_postgres_log_dir }}"
+      - option: port
+        value: "{{ hybridops_postgres_port }}"
+      - option: listen_addresses
+        value: "{{ hybridops_postgres_listen_addresses | join(',') }}"
+      - option: log_directory
+        value: "{{ hybridops_postgres_log_dir }}"
   changed_when: false
 
 - name: Build HBA host rules from allowed clients
@@ -35,7 +36,8 @@
 
 - name: Assemble final HBA entries
   ansible.builtin.set_fact:
-    _hybridops_postgres_hba_entries: "{{ hybridops_postgres_hba_local_defaults + (_hybridops_postgres_hba_host_rules | default([])) }}"
+    _hybridops_postgres_hba_entries: >-
+      {{ hybridops_postgres_hba_local_defaults + (_hybridops_postgres_hba_host_rules | default([])) }}
   changed_when: false
 
 - name: Run upstream PostgreSQL role
@@ -48,11 +50,9 @@
     postgresql_log_dir: "{{ hybridops_postgres_log_dir }}"
     postgresql_global_config_options: "{{ _hybridops_postgres_conf + hybridops_postgres_extra_conf }}"
     postgresql_hba_entries: "{{ _hybridops_postgres_hba_entries }}"
-
     postgresql_databases: "{{ hybridops_postgres_databases }}"
     postgresql_users: "{{ hybridops_postgres_users }}"
     postgresql_privs: "{{ hybridops_postgres_privs }}"
-
     postgres_users_no_log: "{{ hybridops_postgres_users_no_log }}"
 
 - name: Evidence

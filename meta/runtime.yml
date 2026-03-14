@@ -1,2 +1,6 @@
 ---
-requires_ansible: ">=2.15.0"
+# purpose: Collection runtime metadata for hybridops.common
+# adr: ADR-0606-ansible-collections-release-process
+# maintainer: HybridOps.Tech
+
+requires_ansible: ">=2.15"

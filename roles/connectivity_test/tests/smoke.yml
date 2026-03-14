@@ -14,6 +14,6 @@
     connectivity_timeout: 3
 
   roles:
-    # Important: short name only – resolved via ANSIBLE_ROLES_PATH
+    # Important: short name only - resolved via ANSIBLE_ROLES_PATH
     - role: hybridops.common.connectivity_test
       tags: [smoke]

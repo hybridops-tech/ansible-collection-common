@@ -1,6 +1,7 @@
 ---
 # SPDX-License-Identifier: MIT-0
-# purpose: Test the gen_inventory role and copy generated hosts.ini into a local output folder.
+# purpose: Test the gen_inventory role with an optional interactive env prompt.
+# purpose: Copy generated hosts.ini into a local output folder.
 # adr: ADR-0600-environment-guard-framework
 # maintainer: HybridOps.Studio
 
@@ -14,20 +15,20 @@
 
   pre_tasks:
     - name: Prompt for env when not provided and not running in CI
-      when:
-        - env is not defined or (env | string | trim) == ''
-        - (lookup('env', 'CI') | default('', true) | trim) == ''
       ansible.builtin.pause:
         prompt: "Enter environment (e.g., dev, staging, prod): "
       register: _env_prompt
+      when:
+        - env is not defined or (env | string | trim) == ''
+        - (lookup('env', 'CI') | default('', true) | trim) == ''
 
     - name: Set env from prompt
+      ansible.builtin.set_fact:
+        env: "{{ _env_prompt.user_input | lower | trim }}"
       when:
         - env is not defined or (env | string | trim) == ''
         - _env_prompt is defined
         - (_env_prompt.user_input | string | trim) != ''
-      ansible.builtin.set_fact:
-        env: "{{ _env_prompt.user_input | lower | trim }}"
 
     - name: Assert env is provided
       ansible.builtin.assert:
@@ -47,7 +48,7 @@
   tasks:
     - name: Run gen_inventory role
       ansible.builtin.include_role:
-        name: hybridops.common.gen_inventory
+        name: common/gen_inventory
 
     - name: Stat generated inventory
       ansible.builtin.stat:
@@ -57,7 +58,7 @@
     - name: Fail if inventory file is missing
       ansible.builtin.fail:
         msg: "Inventory file not generated at {{ inventory_file }}"
-      when: not inv_file.stat.exists
+      when: not (inv_file.stat.exists | bool)
 
     - name: Ensure test_output_dir exists
       ansible.builtin.file:
@@ -80,4 +81,4 @@
     - name: Fail if copied artifact is missing
       ansible.builtin.fail:
         msg: "Copied artifact missing at {{ [test_output_dir, copied_filename] | path_join }}"
-      when: not copied.stat.exists
+      when: not (copied.stat.exists | bool)

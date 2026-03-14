@@ -53,4 +53,5 @@ jsonl_filename: "connectivity_report.jsonl"
 connectivity_use_cid: true
 connectivity_inherited_cid: "{{ correlation_id | default(egf_correlation_id | default('', true), true) | lower }}"
 connectivity_env_cid: "{{ lookup('env', 'EGF_CORR_ID') | default('', true) | lower }}"
-connectivity_cid_pre: "{{ connectivity_inherited_cid or connectivity_env_cid }}"
+connectivity_cid_pre: >-
+  {{ connectivity_inherited_cid if (connectivity_inherited_cid | length) > 0 else connectivity_env_cid }}

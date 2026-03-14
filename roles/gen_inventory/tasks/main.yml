@@ -3,7 +3,8 @@
 # purpose: Resolve project root, validate inputs, and load environment data for dynamic inventory
 # maintainer: HybridOps.Studio
 
-- ansible.builtin.include_tasks: _validate.yml
+- name: Validate inputs (gen_inventory)
+  ansible.builtin.include_tasks: _validate.yml
 
 - name: Fail if 'env' is not provided
   ansible.builtin.fail:
@@ -30,11 +31,16 @@
     _root_playbook: "{{ (playbook_dir | realpath) | trim }}"
   ansible.builtin.set_fact:
     root_candidates_raw:
-      - {label: "explicit_var", path: "{{ _root_explicit }}"}
-      - {label: "environment_var", path: "{{ _root_env }}"}
-      - {label: "git_repo_root", path: "{{ _root_git }}"}
-      - {label: "role_path_root", path: "{{ _root_role }}"}
-      - {label: "playbook_dir_fallback", path: "{{ _root_playbook }}"}
+      - label: explicit_var
+        path: "{{ _root_explicit }}"
+      - label: environment_var
+        path: "{{ _root_env }}"
+      - label: git_repo_root
+        path: "{{ _root_git }}"
+      - label: role_path_root
+        path: "{{ _root_role }}"
+      - label: playbook_dir_fallback
+        path: "{{ _root_playbook }}"
   delegate_to: localhost
   run_once: true
 
@@ -47,7 +53,7 @@
 - name: Fail if no non-empty root candidates
   ansible.builtin.fail:
     msg: "No valid project root candidates were found."
-  when: root_candidates | length == 0
+  when: (root_candidates | length) == 0
   delegate_to: localhost
   run_once: true
 
@@ -62,6 +68,43 @@
   run_once: true
 
 - name: Scan markers in candidate inventories
+  block:
+    - name: Stat markers
+      ansible.builtin.stat:
+        path: "{{ item.0.path }}/{{ inventories_dir_name }}/{{ item.1 }}"
+      register: _marker_stats
+      loop: "{{ root_candidates | product(inventories_marker_candidates) | list }}"
+      loop_control:
+        label: "{{ item.0.label }} -> {{ item.1 }}"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Select project root by first marker match
+      ansible.builtin.set_fact:
+        project_root: >-
+          {{
+            (
+              _marker_stats.results
+              | selectattr('stat.exists')
+              | list
+              | map(attribute='item.0.path')
+              | list
+              | first
+            )
+            | default('')
+          }}
+        detection_method: >-
+          {{
+            (
+              _marker_stats.results
+              | selectattr('stat.exists')
+              | list
+              | length
+            )
+            | ternary('inventories_marker', '')
+          }}
+      delegate_to: localhost
+      run_once: true
   delegate_to: localhost
   run_once: true
   block:
@@ -129,6 +172,8 @@
             )
             | default(root_candidates | map(attribute='label') | list | last)
           }}
+      delegate_to: localhost
+      run_once: true
 
 - name: Set inventory base path
   ansible.builtin.set_fact:
@@ -175,7 +220,7 @@
 - name: Validate environments[env]
   ansible.builtin.fail:
     msg: >-
-      'environments.{{ env }}' missing in {{ env_data_file }}.
+      environments.{{ env }} missing in {{ env_data_file }}.
       Available: {{ environments.keys() | list if environments is defined else [] }}
   when: environments is not defined or (env not in environments)
   delegate_to: localhost
@@ -184,11 +229,10 @@
 - name: Generate inventory files
   ansible.builtin.include_tasks: gen_inventories.yml
 
-- name: Summary - Environment Guard Execution Complete
+- name: Summary - gen_inventory complete
   ansible.builtin.debug:
-    msg: |
-      Environment Guard completed successfully.
-      Environment: {{ env }}
-      Project Root: {{ project_root }}
-      Inventory Path: {{ inventory_base_path }}
-      Detection Method: {{ detection_method | default('N/A') }}
+    msg: >-
+      gen_inventory completed successfully.
+      env={{ env }}, project_root={{ project_root }},
+      inventory_base_path={{ inventory_base_path }},
+      detection_method={{ detection_method | default('n/a') }}

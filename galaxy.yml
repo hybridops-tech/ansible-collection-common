@@ -9,11 +9,12 @@ version: "0.1.4"
 
 readme: README.md
 description: >-
-  Shared plugins and reusable platform roles for HybridOps, including governance,
-  connectivity, container runtime, DNS control-plane, and VyOS WAN helpers.
+  Shared plugins and utility roles for HybridOps.Studio, providing common
+  tagging patterns, environment handling, connectivity checks, and governance
+  helpers.
 
 authors:
-  - HybridOps.Tech
+  - HybridOps.Studio
 
 license:
   - MIT-0
@@ -24,8 +25,6 @@ tags:
   - plugins
   - governance
   - connectivity
-  - infrastructure
-  - networking
 
 homepage: https://hybridops.tech
 documentation: https://docs.hybridops.tech

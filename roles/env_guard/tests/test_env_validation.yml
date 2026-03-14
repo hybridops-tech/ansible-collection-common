@@ -32,8 +32,8 @@
     - name: Enforce environment choices
       ansible.builtin.fail:
         msg: >-
-          Invalid environment '{{ target_environment }}'.
-          Valid options: {{ valid_environments | join(', ') }}
+          Invalid environment '{{ target_environment }}'. Valid options:
+          {{ valid_environments | join(', ') }}
       when: target_environment not in valid_environments
 
     - name: Run env_guard for selected environment
@@ -50,7 +50,7 @@
           - env_guard_correlation_id is defined
           - env_guard_correlation_id | length > 0
           - env_guard_correlation_id is match(
-              "^(envguard-[0-9a-f]{16}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$"
+            "^(envguard-[0-9a-f]{16}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$"
             )
         fail_msg: "Environment guard validation failed"
         success_msg: "Environment guard validation completed for {{ target_environment }}"
@@ -115,7 +115,8 @@
 
     - name: Check audit log
       ansible.builtin.stat:
-        path: "{{ env_guard_run_dir }}/{{ env_guard.audit.log_file | default('env_guard_audit.log') }}"
+        path: >-
+          {{ env_guard_run_dir }}/{{ env_guard.audit.log_file | default('env_guard_audit.log') }}
       register: audit_log_stat
       changed_when: false
 
@@ -153,3 +154,4 @@
         - "{{ env_guard_run_dir }}/{{ env_guard.audit.log_file | default('env_guard_audit.log') }}"
         - "{{ (report_files.files | sort(attribute='mtime', reverse=True) | first).path }}"
       when: copy_to_output
+      ignore_errors: true

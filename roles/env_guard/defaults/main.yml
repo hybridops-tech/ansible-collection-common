@@ -1,3 +1,4 @@
+---
 # purpose: Environment guard defaults (paths, environment profiles, audit settings)
 # adr: ADR-0600-environment-guard-framework
 # maintainer: HybridOps.Studio
@@ -26,12 +27,14 @@ env_guard:
       monitoring_level: basic
       deployment_window: always
       health_check_timeout: 30
+
     staging:
       <<: *dev_base
       risk_level: 5
       monitoring_level: standard
       deployment_window: business_hours
       health_check_timeout: 60
+
     prod:
       <<: *dev_base
       risk_level: 10
@@ -48,14 +51,36 @@ env_guard:
   deployment:
     windows:
       always:
-        days: [ monday, tuesday, wednesday, thursday, friday, saturday, sunday ]
-        hours: { start: "00:00", end: "23:59" }
+        days:
+          - monday
+          - tuesday
+          - wednesday
+          - thursday
+          - friday
+          - saturday
+          - sunday
+        hours:
+          start: "00:00"
+          end: "23:59"
+
       business_hours:
-        days: [ monday, tuesday, wednesday, thursday, friday ]
-        hours: { start: "09:00", end: "17:00" }
+        days:
+          - monday
+          - tuesday
+          - wednesday
+          - thursday
+          - friday
+        hours:
+          start: "09:00"
+          end: "17:00"
+
       maintenance_window:
-        days: [ saturday, sunday ]
-        hours: { start: "10:00", end: "16:00" }
+        days:
+          - saturday
+          - sunday
+        hours:
+          start: "10:00"
+          end: "16:00"
 
   observability:
     logging:

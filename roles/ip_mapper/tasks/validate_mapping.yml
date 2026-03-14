@@ -5,25 +5,34 @@
 # maintainer: HybridOps.Studio
 
 - name: Identify unmapped hosts
-  set_fact:
-    unmapped_hosts: >-
-      {{
-        working_targets
-        | select('in', groups['all'])
-        | map('extract', hostvars)
-        | selectattr('ansible_host', 'undefined')
-        | map(attribute='inventory_hostname')
-        | list
-      }}
+  ansible.builtin.set_fact:
+    unmapped_hosts: []
+  changed_when: false
+
+- name: Collect hosts missing ansible_host
+  ansible.builtin.set_fact:
+    unmapped_hosts: "{{ unmapped_hosts + [item] }}"
+  loop: >-
+    {{ (working_targets | default([]))
+       | select('in', (groups['all'] | default([])))
+       | list }}
+  when:
+    - hostvars[item] is defined
+    - hostvars[item].ansible_host is not defined
+  changed_when: false
 
 - name: Report unmapped hosts
-  debug:
-    msg: "[cid={{ cid }}] Unmapped hosts in {{ validated_env }}: {{ unmapped_hosts | join(', ') }}"
-  when: unmapped_hosts | length > 0
+  ansible.builtin.debug:
+    msg: >-
+      [cid={{ cid | default('n/a') }}] Unmapped hosts in {{ validated_env | default('n/a') }}:
+      {{ unmapped_hosts | join(', ') }}
+  when: (unmapped_hosts | length) > 0
 
 - name: Fail on complete mapping failure
-  fail:
-    msg: "[cid={{ cid }}] No IP mappings found for any hosts in environment {{ validated_env }}"
+  ansible.builtin.fail:
+    msg: >-
+      [cid={{ cid | default('n/a') }}] No IP mappings found for any hosts in environment
+      {{ validated_env | default('n/a') }}
   when:
-  - working_targets | length > 0
-  - mapped_hosts | default([]) | length == 0
+    - (working_targets | default([]) | length) > 0
+    - (mapped_hosts | default([]) | length) == 0

@@ -14,7 +14,8 @@
 
     - name: Wait for PostgreSQL to accept connections on localhost
       ansible.builtin.command: >-
-        pg_isready -h 127.0.0.1 -p {{ hybridops_postgres_port | default(5432) }}
+        pg_isready -h 127.0.0.1 -p
+        {{ hybridops_postgres_port | default(5432) }}
       register: _pg_isready
       changed_when: false
       retries: 10

@@ -1,10 +1,10 @@
 # purpose: Roadmap for PostgreSQL data tier and NetBox bring-up (platform backbone)
 # adr: ADR-0101, ADR-0102, ADR-0103, ADR-0104
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 ## Scope
 
-This roadmap captures the next execution steps to move from a validated PostgreSQL wrapper role to a working NetBox deployment backed by the shared PostgreSQL data tier, aligned to the HybridOps.Studio network segmentation model.
+This roadmap captures the next execution steps to move from a validated PostgreSQL wrapper role to a working NetBox deployment backed by the shared PostgreSQL data tier, aligned to the HybridOps.Tech network segmentation model.
 
 This is an execution checklist, not a design document.
 

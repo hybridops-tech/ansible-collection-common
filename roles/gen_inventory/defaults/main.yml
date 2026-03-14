@@ -17,7 +17,7 @@ inventories_dir_name: "inventories"
 
 # Marker files used to identify the inventory root directory
 inventories_marker_candidates:
-- ".inventory-root"
+  - ".inventory-root"
 
 # Directory for test or CI artifacts (leave empty to disable output)
 test_output_dir: ""

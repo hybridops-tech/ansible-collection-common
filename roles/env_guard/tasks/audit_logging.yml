@@ -43,7 +43,10 @@
   ansible.builtin.lineinfile:
     path: "{{ env_guard_run_dir }}/{{ env_guard.audit.log_file }}"
     line: >-
-      {{ env_guard_timestamp | default('unknown') }} {{ env_guard_correlation_id | default('n/a') }} {{ env_guard_user | default('unknown') }} {{ (validated_env | default(env | default('na'), true)) | upper }} APPROVED risk={{ env_guard_risk_score | default('n/a') }} hosts={{ target_host_count | default('n/a') }} justification="{{ deployment_justification | default('n/a') }}"
+      {{ env_guard_timestamp | default('unknown') }} {{ env_guard_correlation_id | default('n/a') }}
+      {{ env_guard_user | default('unknown') }} {{ (validated_env | default(env | default('na'), true)) | upper }}
+      APPROVED risk={{ env_guard_risk_score | default('n/a') }} hosts={{ target_host_count | default('n/a') }}
+      justification="{{ deployment_justification | default('n/a') }}"
     create: true
     mode: "0644"
   delegate_to: localhost

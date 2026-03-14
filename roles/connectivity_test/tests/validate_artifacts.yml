@@ -8,12 +8,15 @@
   hosts: localhost
   connection: local
   gather_facts: true
+
   vars:
     _project_root: >-
-      {{ playbook_dir
-         | regex_replace('/deployment/ci/playbooks.*$', '')
-         | regex_replace('/common/playbooks.*$', '')
-         | regex_replace('/roles/.*$', '') }}
+      {{
+        playbook_dir
+        | regex_replace('/deployment/ci/playbooks.*$', '')
+        | regex_replace('/common/playbooks.*$', '')
+        | regex_replace('/roles/.*$', '')
+      }}
     central_root: >-
       {{
         vars.get(
@@ -26,6 +29,7 @@
     json_name: "{{ connectivity.audit.json_file | default('connectivity_report.json') }}"
     jsonl_name: "{{ connectivity.audit.jsonl_file | default('connectivity_report.jsonl') }}"
     copy_to_output: true
+
   tasks:
     - name: Stat run_dir (follow symlink if latest)
       ansible.builtin.stat:
@@ -47,7 +51,7 @@
         run_dir: "{{ (run_dirs.files | sort(attribute='mtime', reverse=True) | first).path }}"
       when:
         - not run_dir_stat.stat.exists
-        - run_dirs.matched | int > 0
+        - (run_dirs.matched | int) > 0
 
     - name: Re-stat run_dir after fallback
       ansible.builtin.stat:
@@ -60,8 +64,7 @@
     - name: Fail if no connectivity run directory is available
       ansible.builtin.fail:
         msg: >-
-          No connectivity run directory found under {{ central_root }}
-          (checked: {{ run_dir }})
+          No connectivity run directory found under {{ central_root }} (checked: {{ run_dir }})
       when:
         - not run_dir_stat.stat.exists
         - run_dir_stat2 is not defined or not run_dir_stat2.stat.exists
@@ -78,22 +81,9 @@
       register: jsonl_stat
       changed_when: false
 
-    - name: Build artifact copy list
-      ansible.builtin.set_fact:
-        artifact_copy_paths: >-
-          {{
-            [run_dir ~ '/' ~ json_name]
-            + (
-                [run_dir ~ '/' ~ jsonl_name]
-                if (jsonl_stat.stat.exists | default(false))
-                else []
-              )
-          }}
-      changed_when: false
-
     - name: Connectivity artifact summary
       ansible.builtin.debug:
-        msg: |
+        msg: |-
           CONNECTIVITY TEST VALIDATION
           RUN DIR : {{ run_dir }}
           JSON    : {{ json_stat.stat.exists | ternary('OK', 'MISSING') }}
@@ -113,5 +103,8 @@
         dest: "{{ playbook_dir }}/output/{{ run_dir | basename }}/{{ item | basename }}"
         remote_src: true
         mode: "0644"
-      loop: "{{ artifact_copy_paths | default([]) }}"
+      loop:
+        - "{{ run_dir }}/{{ json_name }}"
+        - "{{ run_dir }}/{{ jsonl_name }}"
       when: copy_to_output
+      ignore_errors: true

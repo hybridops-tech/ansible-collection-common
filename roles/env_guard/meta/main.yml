@@ -1,3 +1,4 @@
+---
 # SPDX-License-Identifier: MIT-0
 # purpose: Ansible Galaxy metadata for the env_guard role
 # adr: ADR-0600-environment-guard-framework
@@ -7,31 +8,32 @@ galaxy_info:
   role_name: env_guard
   namespace: hybridops
   author: HybridOps.Studio
-  description: >
-    Environment guard role for deployment validation, risk assessment, approval workflows, and audit logging in homelab and production-like environments.
+  description: >-
+    Environment guard role for deployment validation, risk assessment, approval workflows, and audit logging in homelab
+    and production-like environments.
 
   company: "HybridOps.Studio"
   license: MIT
   min_ansible_version: "2.13"
 
   platforms:
-  - name: EL
-    versions: [ "8", "9" ]
-  - name: Ubuntu
-    versions: [ "focal", "jammy" ]
-  - name: Debian
-    versions: [ "bullseye", "bookworm" ]
+    - name: EL
+      versions: ["8", "9"]
+    - name: Ubuntu
+      versions: ["focal", "jammy"]
+    - name: Debian
+      versions: ["bullseye", "bookworm"]
 
   galaxy_tags:
-  - environment
-  - validation
-  - security
-  - governance
-  - audit
-  - risk
-  - deployment
-  - approvals
-  - homelab
-  - enterprise
+    - environment
+    - validation
+    - security
+    - governance
+    - audit
+    - risk
+    - deployment
+    - approvals
+    - homelab
+    - enterprise
 
 dependencies: []

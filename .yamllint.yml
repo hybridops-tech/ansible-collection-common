@@ -1,0 +1,17 @@
+---
+# purpose: YAML style policy for the hybridops.common collection
+# adr: ADR-0606-ansible-collections-release-process
+# maintainer: HybridOps.Tech
+
+extends: default
+
+rules:
+  comments:
+    min-spaces-from-content: 2
+  document-start: disable
+  line-length:
+    max: 120
+    allow-non-breakable-inline-mappings: true
+    allow-non-breakable-words: true
+  truthy:
+    check-keys: false

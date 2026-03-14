@@ -11,8 +11,10 @@
 - name: Generate correlation ID (UUID)
   ansible.builtin.set_fact:
     env_guard_correlation_id: >-
-      {{ env_guard_correlation_id
-         | default(lookup('ansible.builtin.pipe', 'uuidgen') | lower, true) }}
+      {{
+        env_guard_correlation_id
+        | default(lookup('ansible.builtin.pipe', 'uuidgen') | lower, true)
+      }}
   run_once: true
   delegate_to: localhost
 
@@ -83,7 +85,7 @@
 
       Enter environment (dev/staging/prod) [default: dev]:
   register: environment_selection
-  when: env is not defined or (env | default('') | length == 0)
+  when: env is not defined or (env | default('') | length) == 0
 
 - name: Set environment from user input or variable
   ansible.builtin.set_fact:
@@ -111,7 +113,45 @@
     target_host_count: "{{ ansible_play_hosts | length }}"
     env_upper: "{{ env | upper }}"
 
-- name: Check deployment timing for higher-risk environments  # noqa: jinja[spacing]
+- name: Check deployment timing for higher-risk environments
+  block:
+    - name: Capture current time components
+      ansible.builtin.set_fact:
+        current_weekday: "{{ ansible_date_time.weekday }}"
+        current_hour: "{{ ansible_date_time.hour | int }}"
+        weekday_names:
+          - Monday
+          - Tuesday
+          - Wednesday
+          - Thursday
+          - Friday
+          - Saturday
+          - Sunday
+
+    - name: Calculate derived time values
+      ansible.builtin.set_fact:
+        current_day_name: "{{ weekday_names[current_weekday | int] }}"
+        is_weekend: "{{ (current_weekday | int) >= 5 }}"
+
+    - name: Calculate maintenance window status
+      ansible.builtin.set_fact:
+        in_maintenance_window: >-
+          {{ is_weekend and (current_hour >= 10 and current_hour <= 16) }}
+
+    - name: Deployment timing summary
+      ansible.builtin.debug:
+        msg: |
+          DEPLOYMENT TIMING
+          {{ _separator }}
+          Current time (UTC): {{ current_day_name }} {{ ansible_date_time.hour }}:{{ ansible_date_time.minute }}
+          Environment:        {{ env_upper }}
+          Preferred window:   {{ current_env_config.deployment_window }}
+          Weekend:            {{ 'Yes' if is_weekend else 'No' }}
+          In window:          {{ 'Yes' if (env != 'prod' or in_maintenance_window) else 'No' }}
+          {% if env == 'prod' and not in_maintenance_window %}
+          Note: production changes are recommended during weekend maintenance windows (10:00–16:00 UTC).
+          {% endif %}
+          {{ _separator }}
   when: env in ["staging", "prod"]
   block:
     - name: Capture current time components
@@ -162,7 +202,7 @@
       User:          {{ _guard_user }}
       Time:          {{ _guard_timestamp }}
       Monitoring:    {{ current_env_config.monitoring_level | upper }}
-      Maintenance window active: {{ 'Yes' if in_maintenance_window | default(false) else 'No' }}
+      Maintenance window active: {{ 'Yes' if (in_maintenance_window | default(false)) else 'No' }}
       {{ _separator }}
   when: env == "prod"
 
@@ -247,7 +287,7 @@
         production_justification.user_input
         if (production_justification is defined
             and production_justification.user_input is defined
-            and production_justification.user_input | length > 0)
+            and (production_justification.user_input | length) > 0)
         else 'Standard deployment'
       }}
     deployment_window_check: "{{ in_maintenance_window | default(true) }}"

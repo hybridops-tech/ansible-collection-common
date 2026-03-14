@@ -20,21 +20,21 @@
 
   pre_tasks:
     - name: Normalize environment key
-      set_fact:
+      ansible.builtin.set_fact:
         validated_env: "{{ validated_env | lower }}"
 
     - name: Validate environment choice
-      assert:
+      ansible.builtin.assert:
         that:
-          - validated_env in ['dev', 'staging', 'prod']  # expand if you add more in tests
+          - validated_env in ['dev', 'staging', 'prod']
         fail_msg: "Invalid environment '{{ validated_env }}'. Must be dev, staging, or prod."
 
   roles:
-    - role: hybridops.common.ip_mapper
+    - role: ../../
 
   post_tasks:
     - name: Verify IP mapping
-      assert:
+      ansible.builtin.assert:
         that:
           - ansible_host is defined
           - ansible_host != "XX.XX.XX.00"

@@ -1,7 +1,7 @@
+---
 # purpose: Controller-side connectivity checks per host (delegated to localhost)
 # maintainer: HybridOps.Studio
 
-# Preflight
 - name: Resolve target host
   ansible.builtin.set_fact:
     __target_host: "{{ ansible_host | default(inventory_hostname) }}"
@@ -10,18 +10,20 @@
 - name: Optionally show test target
   ansible.builtin.debug:
     msg: "Testing {{ inventory_hostname }} ({{ __target_host }})"
-  when: show_test_targets | default(false)
+  when: show_test_targets | default(false) | bool
 
 - name: Skip placeholder or invalid targets
   when: __target_host in ['XX.XX.XX.00', '0.0.0.0', '', None]
   block:
-  - ansible.builtin.debug:
-      msg: "Skipping {{ inventory_hostname }} (placeholder)"
-  - ansible.builtin.meta: end_host
+    - name: Note placeholder target
+      ansible.builtin.debug:
+        msg: "Skipping {{ inventory_hostname }} (placeholder)"
+    - name: End host for placeholder target
+      ansible.builtin.meta: end_host
 
-# Controller facts
 - name: Gather controller facts
   ansible.builtin.setup:
+    gather_subset: all
   delegate_to: localhost
   run_once: true
 
@@ -30,23 +32,25 @@
     __controller_icmp_flag: >-
       {{
         '-n'
-        if (hostvars['localhost'].ansible_facts.get('os_family', 'Linux') | lower) == 'windows'
+        if (
+          (hostvars['localhost'].ansible_facts.get('os_family', 'Linux') | lower)
+          == 'windows'
+        )
         else '-c'
       }}
   delegate_to: localhost
   run_once: true
 
-# Tests
 - name: ICMP ping
-  ansible.builtin.command: >
+  ansible.builtin.command: >-
     ping {{ hostvars['localhost'].__controller_icmp_flag | default('-c') }}
-         {{ ping_count | default(3) }}
-         {{ __target_host }}
+    {{ ping_count | default(3) }}
+    {{ __target_host }}
   delegate_to: localhost
   register: ping_result
   ignore_errors: true
   changed_when: false
-  when: tests_enabled.icmp | default(true)
+  when: tests_enabled.icmp | default(true) | bool
 
 - name: Test SSH port
   ansible.builtin.wait_for:
@@ -58,8 +62,8 @@
   register: ssh_result
   ignore_errors: true
   when:
-  - tests_enabled.ssh | default(true)
-  - ports.ssh is defined
+    - tests_enabled.ssh | default(true) | bool
+    - ports.ssh is defined
 
 - name: Test Telnet port
   ansible.builtin.wait_for:
@@ -71,8 +75,8 @@
   register: telnet_result
   ignore_errors: true
   when:
-  - tests_enabled.telnet | default(false)
-  - ports.telnet is defined
+    - tests_enabled.telnet | default(false) | bool
+    - ports.telnet is defined
 
 - name: Test HTTP port
   ansible.builtin.wait_for:
@@ -84,8 +88,8 @@
   register: http_result
   ignore_errors: true
   when:
-  - tests_enabled.http | default(true)
-  - ports.http is defined
+    - tests_enabled.http | default(true) | bool
+    - ports.http is defined
 
 - name: Optional HTTP HEAD
   ansible.builtin.uri:
@@ -93,14 +97,19 @@
     method: HEAD
     return_content: false
     validate_certs: false
-    status_code: [ 200, 301, 302, 401, 403 ]
+    status_code:
+      - 200
+      - 301
+      - 302
+      - 401
+      - 403
     timeout: "{{ __timeout }}"
   delegate_to: localhost
   register: http_head_result
   ignore_errors: true
   when:
-  - tests_enabled.http_head | default(false)
-  - ports.http is defined
+    - tests_enabled.http_head | default(false) | bool
+    - ports.http is defined
 
 - name: Test HTTPS port
   ansible.builtin.wait_for:
@@ -112,8 +121,8 @@
   register: https_result
   ignore_errors: true
   when:
-  - tests_enabled.https | default(true)
-  - ports.https is defined
+    - tests_enabled.https | default(true) | bool
+    - ports.https is defined
 
 - name: Optional HTTPS HEAD
   ansible.builtin.uri:
@@ -121,11 +130,16 @@
     method: HEAD
     return_content: false
     validate_certs: false
-    status_code: [ 200, 301, 302, 401, 403 ]
+    status_code:
+      - 200
+      - 301
+      - 302
+      - 401
+      - 403
     timeout: "{{ __timeout }}"
   delegate_to: localhost
   register: https_head_result
   ignore_errors: true
   when:
-  - tests_enabled.https_head | default(false)
-  - ports.https is defined
+    - tests_enabled.https_head | default(false) | bool
+    - ports.https is defined
