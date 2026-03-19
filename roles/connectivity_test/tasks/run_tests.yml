@@ -1,6 +1,6 @@
 ---
 # purpose: Controller-side connectivity checks per host (delegated to localhost)
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Resolve target host
   ansible.builtin.set_fact:

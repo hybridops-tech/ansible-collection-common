@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Validate prerequisites for IP mapping and seed correlation ID (CID) for traceable logging.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Ensure correlation ID for logging
   when: ipmapper_use_cid | default(false) | bool

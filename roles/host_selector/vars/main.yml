@@ -1,7 +1,7 @@
 ---
 # SPDX-License-Identifier: MIT-0
 # purpose: Defines menu text, category mappings, and validation messages for host_selector.
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 menu_text: |
   Host Selection Interface

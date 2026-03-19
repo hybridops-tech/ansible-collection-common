@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Orchestrate IP mapping flow: validate, resolve ansible_host, and verify results.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Validate pipeline prerequisites
   include_tasks: validate_prerequisites.yml

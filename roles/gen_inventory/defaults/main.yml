@@ -1,7 +1,7 @@
 ---
 # SPDX-License-Identifier: MIT-0
 # purpose: Core variables for inventory resolution and runtime configuration
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 # Python interpreter used for Ansible playbook execution
 ansible_python_interpreter: "{{ ansible_playbook_python }}"

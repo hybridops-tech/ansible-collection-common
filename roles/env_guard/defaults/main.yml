@@ -1,7 +1,7 @@
 ---
 # purpose: Environment guard defaults (paths, environment profiles, audit settings)
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 # Resolve project root for both CI playbooks and direct role usage
 _project_root: >-

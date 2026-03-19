@@ -27,4 +27,4 @@ This project follows **Semantic Versioning** and the **Keep a Changelog** format
 
 ---
 
-**Maintainer:** HybridOps.Studio
+**Maintainer:** HybridOps.Tech

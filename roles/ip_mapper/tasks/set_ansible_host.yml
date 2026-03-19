@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Resolve ansible_host dynamically from environment mappings and track successful mappings.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Map IP addresses for validated environment
   ansible.builtin.set_fact:

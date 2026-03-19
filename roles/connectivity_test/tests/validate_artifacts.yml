@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Validate connectivity_test artifacts and copy into tests/output for evidence
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Validate connectivity artifacts
   hosts: localhost

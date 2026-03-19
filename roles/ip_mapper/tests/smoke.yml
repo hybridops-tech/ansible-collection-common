@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Smoke-test ip_mapper role; validate mapping and CID logging for a selected environment.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Test IP Mapper Role
   hosts: all

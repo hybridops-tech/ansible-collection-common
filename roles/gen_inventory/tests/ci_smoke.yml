@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Smoke test for gen_inventory role (CI-safe, non-interactive)
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Smoke test gen_inventory
   hosts: localhost

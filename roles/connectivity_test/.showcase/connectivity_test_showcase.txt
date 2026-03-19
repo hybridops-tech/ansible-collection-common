@@ -2,7 +2,7 @@
 === VIDEO SCRIPT ===
 
 [INTRO - 00:00]
-Welcome to HybridOps Studio! I'm Jeleel Muibi, and today we're showcasing the Environment Guard Framework — your enterprise-grade connectivity test harness.
+Welcome to HybridOps! I'm Jeleel Muibi, and today we're showcasing the Environment Guard Framework — your enterprise-grade connectivity test harness.
 
 [OVERVIEW - 00:20]
 This framework validates network connectivity across ICMP, SSH, Telnet, HTTP, and HTTPS protocols. It integrates seamlessly with governance workflows and generates structured JSON and JSONL reports.
@@ -20,7 +20,7 @@ Artifacts are saved in JSON and JSONL formats, with metadata and symlink updates
 We validate the central artifacts and optionally copy them for evidence. This ensures audit readiness and governance alignment.
 
 [WRAP-UP - 05:30]
-Thanks for watching! Subscribe to HybridOps Studio for more enterprise automation insights.
+Thanks for watching! Subscribe to HybridOps for more enterprise automation insights.
 
 
 === YOUTUBE DESCRIPTION ===
@@ -45,8 +45,8 @@ Validate network connectivity across ICMP, SSH, Telnet, HTTP, and HTTPS protocol
 - Validating central artifacts
 - Copying results for audit evidence
 
-🔗 Learn more at https://hybridops.studio
-#Ansible #NetworkTesting #DevOps #HybridOpsStudio #ConnectivityTest #CID #Governance #Automation
+🔗 Learn more at https://hybridops.tech
+#Ansible #NetworkTesting #DevOps #HybridOpsTech #ConnectivityTest #CID #Governance #Automation
 
 
 === VIDEO CHAPTERS ===

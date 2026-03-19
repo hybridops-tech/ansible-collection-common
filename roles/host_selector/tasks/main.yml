@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Orchestrate host selection; assumes env_guard has validated the environment.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Ensure correlation ID for logging
   when: host_selector_use_cid | default(false) | bool

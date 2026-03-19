@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Capture host selection method and validate input.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Trace CID before menu
   when: host_selector_use_cid

@@ -5,7 +5,7 @@
 
 galaxy_info:
   role_name: postgresql_service
-  author: HybridOps.Studio
+  author: HybridOps.Tech
   description: >-
     Wrapper for geerlingguy.postgresql with HybridOps defaults and evidence
     hooks.

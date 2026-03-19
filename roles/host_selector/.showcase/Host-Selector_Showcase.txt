@@ -1,5 +1,5 @@
 
-HybridOps.Studio — Environment Guard Framework (EGF)
+HybridOps.Tech — Environment Guard Framework (EGF)
 Host Selector Showcase
 Last updated: 2025-09-10 16:36 UTC
 ===================================================
@@ -7,14 +7,14 @@ Last updated: 2025-09-10 16:36 UTC
 [SECTION 1] VIDEO SCRIPT
 Title Card (0:00–0:05)
   • On-screen text: "EGF: Ansible Host Selector — 4 Methods, Zero‑Risk Targeting"
-  • Subtext: "hybridops.studio"
+  • Subtext: "hybridops.tech"
   • SFX: subtle whoosh; background pulse.
 
 Hook (0:05–0:20)
   • Presenter (to camera): "Can your playbook target only the right hosts, every time? Today I’ll show you a Host Selector that adds governance, validation, and four selection methods to your Ansible workflows."
 
 Intro & Value (0:20–0:50)
-  • Lower-third: "hybridops.studio"
+  • Lower-third: "hybridops.tech"
   • Key points:
     – 4 selection methods: Manual, Group-based, Hierarchical, All Hosts.
     – Governance-aware: uses validated environment & correlation ID from the EGF pipeline.
@@ -68,7 +68,7 @@ Next Steps (7:10–7:30)
 
 [SECTION 2] YOUTUBE DESCRIPTION (SEO‑Optimized)
 TITLE
-EGF: Ansible Host Selector — 4 Methods, Zero‑Risk Targeting | hybridops.studio
+EGF: Ansible Host Selector — 4 Methods, Zero‑Risk Targeting | hybridops.tech
 
 DESCRIPTION
 Build enterprise‑grade host targeting into your Ansible pipeline. In this hands‑on demo, I showcase the Environment Guard Framework (EGF) Host Selector with four selection methods (Manual, Group, Hierarchical, All Hosts), governance‑aware environment validation, and dynamic grouping for downstream tasks. You’ll learn how the role normalizes input, prevents mistakes, and emits a runtime group (targets_to_ping) you can pass to tests and deployments.
@@ -99,14 +99,14 @@ CHAPTERS
 07:10 Next Steps
 
 LINKS
-• Website: https://hybridops.studio/
+• Website: https://hybridops.tech/
 • GitHub (profile): https://github.com/uelcn6035
 
 KEYWORDS
 ansible host selection, ansible dynamic inventory, enterprise automation, environment guard framework, correlation id, targets_to_ping, ansible groups, automation governance, hybrid cloud automation, hybridops studio, windows server automation, network automation
 
 HASHTAGS
-#Ansible #Automation #DevOps #HybridCloud #HybridOpsStudio #EnvironmentGuardFramework
+#Ansible #Automation #DevOps #HybridCloud #HybridOpsTech #EnvironmentGuardFramework
 
 
 [SECTION 3] VIDEO CHAPTERS WITH TIMESTAMPS
@@ -130,4 +130,4 @@ HASHTAGS
 • Governance inputs: validated_env, correlation_id
 • Test playbook: tests/test_role.yml
 
-License: MIT-0 — hybridops.studio
+License: MIT-0 — hybridops.tech

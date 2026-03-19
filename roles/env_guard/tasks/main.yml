@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Environment guard framework (selection, risk checks, approvals, audit)
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Ensure facts are available for env_guard
   ansible.builtin.setup:

@@ -1,7 +1,7 @@
 ---
 # SPDX-License-Identifier: MIT-0
 # purpose: Resolve project root, validate inputs, and load environment data for dynamic inventory
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Validate inputs (gen_inventory)
   ansible.builtin.include_tasks: _validate.yml

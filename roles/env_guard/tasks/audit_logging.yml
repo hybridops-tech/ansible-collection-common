@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Environment guard audit trail and report generation
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Ensure audit log directory exists
   ansible.builtin.file:

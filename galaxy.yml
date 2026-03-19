@@ -9,12 +9,12 @@ version: "0.1.5"
 
 readme: README.md
 description: >-
-  Shared plugins and utility roles for HybridOps.Studio, providing common
+  Shared plugins and utility roles for HybridOps.Tech, providing common
   tagging patterns, environment handling, connectivity checks, and governance
   helpers.
 
 authors:
-  - HybridOps.Studio
+  - HybridOps.Tech
 
 license:
   - MIT-0

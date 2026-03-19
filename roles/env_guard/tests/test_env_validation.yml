@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Smoke-test env_guard (selection, correlation ID, audit artifacts)
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Environment guard smoke test
   hosts: localhost

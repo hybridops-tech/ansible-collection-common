@@ -1,7 +1,7 @@
 ---
 # purpose: Connectivity test defaults (ICMP/HTTP knobs and log locations)
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 # Resolve project root for both CI playbooks and direct role usage
 _project_root: >-

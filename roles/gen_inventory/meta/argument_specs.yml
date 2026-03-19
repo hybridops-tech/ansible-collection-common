@@ -1,7 +1,7 @@
 ---
 # SPDX-License-Identifier: MIT-0
 # purpose: Argument specification for dynamic inventory generation role
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 argument_specs:
   main:

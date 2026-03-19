@@ -1,8 +1,8 @@
 # Contributing to `hybridops.common`
 
-`hybridops.common` provides shared plugins and utility roles used across the HybridOps.Studio platform (for example environment guards, connectivity checks, inventory helpers, and common baselines). Changes in this collection can affect CI and multiple dependent roles.
+`hybridops.common` provides shared plugins and utility roles used across the HybridOps.Tech platform (for example environment guards, connectivity checks, inventory helpers, and common baselines). Changes in this collection can affect CI and multiple dependent roles.
 
-Design and release context is maintained in the HybridOps.Studio documentation site.
+Design and release context is maintained in the HybridOps.Tech documentation site.
 
 ## Contribution scope
 

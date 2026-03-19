@@ -1,7 +1,7 @@
 ---
 # SPDX-License-Identifier: MIT-0
 # purpose: Test inventory mappings for ip_mapper smoke tests
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 environments:
   dev:

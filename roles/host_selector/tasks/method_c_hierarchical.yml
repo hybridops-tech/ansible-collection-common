@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Navigate categories and groups, then set target_hosts.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Cache category keys (order as provided)
   set_fact:

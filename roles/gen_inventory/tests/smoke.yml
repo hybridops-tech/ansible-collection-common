@@ -3,7 +3,7 @@
 # purpose: Test the gen_inventory role with an optional interactive env prompt.
 # purpose: Copy generated hosts.ini into a local output folder.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Test gen_inventory role (CI-safe)
   hosts: localhost

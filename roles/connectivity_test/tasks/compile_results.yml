@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Compile per-host connectivity results into a structured test_results fact
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Compute protocol status flags
   ansible.builtin.set_fact:

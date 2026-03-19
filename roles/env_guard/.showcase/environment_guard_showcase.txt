@@ -5,10 +5,10 @@ ENVIRONMENT GUARD SHOWCASE
 
 
 VIDEO SCRIPT: Environment Guard Framework Showcase
-Maintainer: HybridOps.Studio
+Maintainer: HybridOps.Tech
 
 [00:00] INTRODUCTION
-Welcome to HybridOps.Studio — where homelab meets enterprise automation. I'm Jeleel Muibi, and today I'm showcasing the Environment Guard Framework, a production-ready governance system for Ansible deployments.
+Welcome to HybridOps.Tech — where homelab meets enterprise automation. I'm Jeleel Muibi, and today I'm showcasing the Environment Guard Framework, a production-ready governance system for Ansible deployments.
 
 [00:45] WHAT IS ENVIRONMENT GUARD?
 Environment Guard enforces deployment governance, risk scoring, and audit compliance — all within Ansible. It prevents unauthorized production deployments while enabling developer velocity.
@@ -38,7 +38,7 @@ Simulate a production deployment with justification and manual approval.
 - Audit compliance: full traceability
 
 [09:00] WRAP-UP
-Subscribe to HybridOps.Studio for more enterprise-grade automation tutorials.
+Subscribe to HybridOps.Tech for more enterprise-grade automation tutorials.
 
 
 ==============================
@@ -46,10 +46,10 @@ YOUTUBE DESCRIPTION
 ==============================
 
 
-TITLE: Ansible Governance Masterclass | HybridOps.Studio
+TITLE: Ansible Governance Masterclass | HybridOps.Tech
 
 DESCRIPTION:
-🚀 Welcome to HybridOps.Studio! In this video, Jeleel Muibi walks you through the Environment Guard Framework — a production-grade governance system for Ansible deployments.
+🚀 Welcome to HybridOps.Tech! In this video, Jeleel Muibi walks you through the Environment Guard Framework — a production-grade governance system for Ansible deployments.
 
 🔐 WHAT YOU'LL LEARN:
 - Interactive environment validation
@@ -72,7 +72,7 @@ DESCRIPTION:
 - GitHub: https://github.com/uelcn6035
 - Docs: docs/ci_integration.md, docs/egf_pipeline.md
 
-#Ansible #DevOps #AuditLogging #CI #HybridOpsStudio #Governance #Automation #InfrastructureAsCode
+#Ansible #DevOps #AuditLogging #CI #HybridOpsTech #Governance #Automation #InfrastructureAsCode
 
 
 ==============================

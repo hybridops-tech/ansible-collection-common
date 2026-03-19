@@ -1,10 +1,10 @@
-HybridOps.Studio — Environment Guard Framework (EGF)
+HybridOps.Tech — Environment Guard Framework (EGF)
 Host Selector + IP Mapper Showcase
 
 ==== VIDEO SCRIPT ====
 
 TITLE CARD (0:00–0:05)
-On-screen: "HybridOps.Studio | EGF: Host Selector + IP Mapper"
+On-screen: "HybridOps.Tech | EGF: Host Selector + IP Mapper"
 B-roll: Terminal + topology diagram fade-in.
 Voiceover (VO): "In this video, we’ll turn enterprise host selection into a governed, auditable workflow—end to end."
 
@@ -13,7 +13,7 @@ On-screen: "Governed. Auditable. Pipeline-ready."
 VO: "Pick targets safely, map them to live IPs, and prove it with correlation IDs—fast."
 
 INTRO (0:12–0:45)
-VO: "Hey, it’s Jeleel from HybridOps.Studio. Today we’ll showcase the Host Selector and IP Mapper pieces of the Environment Guard Framework. You’ll see how we validate the environment, select hosts four different ways, resolve IPs dynamically, and verify results with clean failure paths and audit-grade logging."
+VO: "Hey, it’s Jeleel from HybridOps.Tech. Today we’ll showcase the Host Selector and IP Mapper pieces of the Environment Guard Framework. You’ll see how we validate the environment, select hosts four different ways, resolve IPs dynamically, and verify results with clean failure paths and audit-grade logging."
 
 AGENDA (0:45–1:00)
 • Prerequisite checks & CID seeding
@@ -53,16 +53,16 @@ Expected: "Host selection successful: <N> hosts selected"
 
 WRAP-UP (11:10–12:00)
 VO: "You’ve seen governed host selection, dynamic IP mapping, and auditable validation. In the next video, we’ll plug in connectivity tests and deployment. If this was helpful, like, subscribe, and check the links below."
-CTA lower-third: "hybridops.studio  |  github.com/uelcn6035"
+CTA lower-third: "hybridops.tech  |  github.com/uelcn6035"
 
 ==== YOUTUBE DESCRIPTION (SEO-Optimized) ====
 
-Title: EGF Host Selector + IP Mapper — Governed Targeting, Dynamic IPs, Audit-Ready (hybridops.studio)
+Title: EGF Host Selector + IP Mapper — Governed Targeting, Dynamic IPs, Audit-Ready (hybridops.tech)
 
 Learn how to build **enterprise-grade host selection** with **governance and auditability** in the Environment Guard Framework (EGF). We validate prerequisites, select targets four ways (manual, groups, hierarchical, all), **map IPs dynamically** per environment, and **verify results** with clean failure paths and correlation IDs (CID).
 
 🔗 Resources
-• Project hub: https://hybridops.studio
+• Project hub: https://hybridops.tech
 • GitHub (Jeleel Muibi): https://github.com/uelcn6035
 
 ⛓️ Pipeline Context

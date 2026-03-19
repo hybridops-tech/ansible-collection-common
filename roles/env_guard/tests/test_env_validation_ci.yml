@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: CI smoke test for env_guard (non-interactive, CI_ENV-driven)
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Environment guard CI validation
   hosts: localhost

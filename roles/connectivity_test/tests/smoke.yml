@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Smoke-test connectivity_test role against cicd_test inventory
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Connectivity validation against cicd_test
   hosts: cicd_test

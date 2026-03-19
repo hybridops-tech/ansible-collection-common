@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Create dynamic inventory groups for selected hosts.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Validate target hosts exist
   fail:

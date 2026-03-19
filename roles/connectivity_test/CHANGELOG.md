@@ -19,7 +19,7 @@ All notable changes to the `hybridops.common.connectivity_test` role are documen
 ### Changed
 - Moved connectivity logs under the canonical evidence tree:
   - `output/logs/ansible/connectivity_logs/<run_id>/…`
-  instead of role-local paths, to align with the wider HybridOps.Studio output layout.
+  instead of role-local paths, to align with the wider HybridOps.Tech output layout.
 - Normalised project-root discovery in `defaults/main.yml` to support execution from:
   - platform CI playbooks (`deployment/ci/playbooks/...`), and
   - collection-local role tests (`roles/.../tests`).

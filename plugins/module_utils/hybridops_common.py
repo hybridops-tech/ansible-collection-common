@@ -1,6 +1,6 @@
 # file: hybridops_common.py
 # purpose: Shared helpers for HybridOps custom modules
-# Maintainer: HybridOps.Studio
+# Maintainer: HybridOps.Tech
 # date: 2025-11-26
 
 

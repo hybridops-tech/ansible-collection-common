@@ -1,7 +1,7 @@
 ---
 # SPDX-License-Identifier: MIT-0
 # purpose: Render environment-specific inventory and optional test copy
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Set inventory paths  # noqa: var-naming[read-only]
   ansible.builtin.set_fact:

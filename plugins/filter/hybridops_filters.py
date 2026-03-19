@@ -1,6 +1,6 @@
 # file: hybridops_filters.py
 # purpose: Filter plugin for HybridOps common collection
-# Maintainer: HybridOps.Studio
+# Maintainer: HybridOps.Tech
 # date: 2025-11-26
 
 from ansible.plugins.filter import FilterBase

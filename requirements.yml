@@ -1,6 +1,6 @@
 ---
 # purpose: Galaxy role dependencies (pinned)
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 roles:
   - name: geerlingguy.postgresql

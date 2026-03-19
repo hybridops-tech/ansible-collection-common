@@ -1,6 +1,6 @@
 # file: hybridops_info.py
 # purpose: Custom module returning basic HybridOps info
-# Maintainer: HybridOps.Studio
+# Maintainer: HybridOps.Tech
 # date: 2025-11-26
 
 from ansible.module_utils.basic import AnsibleModule
@@ -24,7 +24,7 @@ options:
     type: str
     required: false
 Maintainer:
-  - HybridOps.Studio
+  - HybridOps.Tech
 """
 
 EXAMPLES = r"""

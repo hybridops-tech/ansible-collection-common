@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Accept group names, validate existence, and expand to target_hosts.
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Method B | Start
   ansible.builtin.debug:

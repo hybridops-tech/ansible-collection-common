@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 # purpose: Validate IP mapping results and enforce audit traceability using correlation ID (CID).
 # adr: ADR-0600-environment-guard-framework
-# maintainer: HybridOps.Studio
+# maintainer: HybridOps.Tech
 
 - name: Identify unmapped hosts
   ansible.builtin.set_fact:
