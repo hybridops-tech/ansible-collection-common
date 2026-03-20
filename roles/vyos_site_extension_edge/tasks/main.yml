@@ -148,9 +148,8 @@
     timeout: "{{ edge_ssh_connectivity_wait_s | int }}"
     state: started
     msg: >-
-      Cannot reach VyOS edge {{ item.key }} on
-      {{ item.ssh_host }}:{{ vyos_ssh_port }} from control host
-      {{ inventory_hostname }}
+      Cannot reach VyOS edge {{ item.key }} on {{ item.ssh_host }}:{{ vyos_ssh_port }}
+      from control host {{ inventory_hostname }}
       within {{ edge_ssh_connectivity_wait_s }} seconds. Reconcile org/hetzner/vyos-edge-foundation,
       then rerun platform/network/vyos-site-extension-edge.
   loop: "{{ _vyos_edges }}"
@@ -162,10 +161,8 @@
   ansible.builtin.shell: |
     set -euo pipefail
     ssh_key="{{ _vyos_ssh_key_effective }}"
-    ssh {{ vyos_ssh_opts | join(' ') }} \
-      -p "{{ vyos_ssh_port | int }}" \
-      -i "$ssh_key" \
-      "{{ vyos_ssh_user }}@{{ item.ssh_host }}" \
+    ssh {{ vyos_ssh_opts | join(' ') }} -p "{{ vyos_ssh_port | int }}" \
+      -i "$ssh_key" "{{ vyos_ssh_user }}@{{ item.ssh_host }}" \
       "echo HYOPS_EDGE_AUTH_OK"
   args:
     executable: /bin/bash
@@ -183,10 +180,8 @@
   ansible.builtin.shell: |
     set -euo pipefail
     ssh_key="{{ _vyos_ssh_key_effective }}"
-    ssh {{ vyos_ssh_opts | join(' ') }} \
-      -p "{{ vyos_ssh_port | int }}" \
-      -i "$ssh_key" \
-      "{{ vyos_ssh_user }}@{{ item.ssh_host }}" \
+    ssh {{ vyos_ssh_opts | join(' ') }} -p "{{ vyos_ssh_port | int }}" \
+      -i "$ssh_key" "{{ vyos_ssh_user }}@{{ item.ssh_host }}" \
       "sudo /bin/vbash -s" <<'VYOS_EOF'
     source /opt/vyatta/etc/functions/script-template
     configure
@@ -257,15 +252,15 @@
     delete protocols bgp neighbor {{ item.inside_peer_ip }}
     set protocols bgp neighbor {{ item.inside_peer_ip }} remote-as '{{ peer_asn | int }}'
     {% if import_allow_prefixes | length > 0 %}
-    set protocols bgp neighbor {{ item.inside_peer_ip }} address-family ipv4-unicast route-map import \
-      '{{ bgp_import_route_map }}'
+    set protocols bgp neighbor {{ item.inside_peer_ip }} address-family ipv4-unicast \
+      route-map import '{{ bgp_import_route_map }}'
     {% else %}
     delete protocols bgp neighbor {{ item.inside_peer_ip }} address-family ipv4-unicast route-map import
     {% endif %}
     set protocols bgp neighbor {{ item.inside_peer_ip }} address-family ipv4-unicast nexthop-self
     {% if advertise_prefixes | length > 0 %}
-    set protocols bgp neighbor {{ item.inside_peer_ip }} address-family ipv4-unicast route-map export \
-      '{{ bgp_export_route_map }}'
+    set protocols bgp neighbor {{ item.inside_peer_ip }} address-family ipv4-unicast \
+      route-map export '{{ bgp_export_route_map }}'
     {% else %}
     delete protocols bgp neighbor {{ item.inside_peer_ip }} address-family ipv4-unicast route-map export
     {% endif %}
@@ -279,6 +274,7 @@
   loop: "{{ _vyos_edges }}"
   loop_control:
     label: "{{ item.key }}@{{ item.ssh_host }}"
+  changed_when: true
   no_log: "{{ vyos_site_extension_no_log_sensitive | bool }}"
   when: vyos_site_extension_state == "present"
 
@@ -286,10 +282,8 @@
   ansible.builtin.shell: |
     set -euo pipefail
     ssh_key="{{ _vyos_ssh_key_effective | default(vyos_ssh_key_file) }}"
-    ssh {{ vyos_ssh_opts | join(' ') }} \
-      -p "{{ vyos_ssh_port | int }}" \
-      -i "$ssh_key" \
-      "{{ vyos_ssh_user }}@{{ item.ssh_host }}" \
+    ssh {{ vyos_ssh_opts | join(' ') }} -p "{{ vyos_ssh_port | int }}" \
+      -i "$ssh_key" "{{ vyos_ssh_user }}@{{ item.ssh_host }}" \
       "sudo /bin/vbash -s" <<'VYOS_EOF'
     source /opt/vyatta/etc/functions/script-template
     configure
@@ -310,16 +304,15 @@
   loop: "{{ _vyos_edges }}"
   loop_control:
     label: "{{ item.key }}@{{ item.ssh_host }}"
+  changed_when: true
   when: vyos_site_extension_state == "absent"
 
 - name: Collect edge site-extension live status (present)
   ansible.builtin.shell: |
     set -euo pipefail
     ssh_key="{{ _vyos_ssh_key_effective }}"
-    ssh {{ vyos_ssh_opts | join(' ') }} \
-      -p "{{ vyos_ssh_port | int }}" \
-      -i "$ssh_key" \
-      "{{ vyos_ssh_user }}@{{ item.ssh_host }}" \
+    ssh {{ vyos_ssh_opts | join(' ') }} -p "{{ vyos_ssh_port | int }}" \
+      -i "$ssh_key" "{{ vyos_ssh_user }}@{{ item.ssh_host }}" \
       "sudo /bin/bash -s" <<'HYOPS_EOF'
     set -euo pipefail
     ip_line="$(ip -brief address show {{ item.tunnel_ifname }} 2>/dev/null || true)"

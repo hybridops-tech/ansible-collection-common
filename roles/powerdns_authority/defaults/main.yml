@@ -35,4 +35,4 @@ powerdns_allow_axfr_ips: []
 powerdns_allow_notify_from: []
 powerdns_primary_endpoint: ""
 
-powerdns_manage_docker_engine: true
+docker_engine_enable: true

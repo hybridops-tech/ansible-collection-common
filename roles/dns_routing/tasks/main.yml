@@ -48,10 +48,7 @@
 - name: Build PowerDNS effective values
   ansible.builtin.set_fact:
     _powerdns_zone_id_effective: >-
-      {{
-        (powerdns_zone_id | default('', true) | string | trim)
-        or (zone | string | trim)
-      }}
+      {{ (powerdns_zone_id | default('', true) | string | trim) or (zone | string | trim) }}
     _powerdns_record_name_effective: >-
       {{
         (record_fqdn | string).endswith('.')
@@ -85,19 +82,19 @@
   when: dns_state == "present"
   changed_when: false
 
-- name: Reset normalized PowerDNS CNAME targets
+- name: Normalize PowerDNS CNAME targets
   ansible.builtin.set_fact:
-    _powerdns_records_normalized: []
+    _powerdns_records_cname_effective: []
   when:
     - dns_state == "present"
     - (record_type | upper) == "CNAME"
   changed_when: false
 
-- name: Normalize each PowerDNS CNAME target
+- name: Build normalized PowerDNS CNAME record list
   ansible.builtin.set_fact:
-    _powerdns_records_normalized: >-
+    _powerdns_records_cname_effective: >-
       {{
-        (_powerdns_records_normalized | default([]))
+        (_powerdns_records_cname_effective | default([]))
         + [
             {
               'content': (
@@ -114,9 +111,9 @@
     - (record_type | upper) == "CNAME"
   changed_when: false
 
-- name: Replace PowerDNS CNAME targets with normalized values
+- name: Replace PowerDNS records with normalized CNAME targets
   ansible.builtin.set_fact:
-    _powerdns_records_effective: "{{ _powerdns_records_normalized | default([]) }}"
+    _powerdns_records_effective: "{{ _powerdns_records_cname_effective | default([]) }}"
   when:
     - dns_state == "present"
     - (record_type | upper) == "CNAME"
@@ -185,11 +182,7 @@
 - name: Resolve PowerDNS API key from environment
   ansible.builtin.set_fact:
     _powerdns_api_key_effective: >-
-      {{
-        lookup('ansible.builtin.env', powerdns_api_key_env)
-        | default('', true)
-        | string
-      }}
+      {{ lookup('ansible.builtin.env', powerdns_api_key_env) | default('', true) | string }}
   when:
     - dns_state == "present"
     - dns_apply | bool
@@ -213,8 +206,10 @@
     url: >-
       {{
         (powerdns_api_url | regex_replace('/+$', ''))
-        ~ '/api/v1/servers/' ~ (powerdns_server_id | urlencode)
-        ~ '/zones/' ~ (_powerdns_zone_id_effective | urlencode)
+        ~ '/api/v1/servers/'
+        ~ (powerdns_server_id | urlencode)
+        ~ '/zones/'
+        ~ (_powerdns_zone_id_effective | urlencode)
       }}
     method: PATCH
     headers:

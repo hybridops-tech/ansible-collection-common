@@ -71,4 +71,4 @@ A lightweight verification step runs `docker version` for diagnostics.
 - Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)
 - Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-See the [HybridOps.Tech licensing overview](https://docs.hybridops.tech/briefings/legal/licensing/) for project-wide licence details, including branding and trademark notes.
+See the [HybridOps licensing overview](https://docs.hybridops.tech/briefings/legal/licensing/) for project-wide licence details, including branding and trademark notes.
