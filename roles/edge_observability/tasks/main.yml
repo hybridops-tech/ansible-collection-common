@@ -40,6 +40,25 @@
       Local probe metrics require edge_obs_enable_prometheus=true and at least one edge_obs_probe_targets entry.
   when: edge_obs_state == "present"
 
+- name: Preflight | assert public proxy inputs
+  ansible.builtin.assert:
+    that:
+      - >-
+        (edge_obs_public_grafana_host | default('') | trim | length) > 0
+        or (edge_obs_public_thanos_host | default('') | trim | length) > 0
+      - >-
+        (edge_obs_public_grafana_host | default('') | trim | length) == 0
+        or edge_obs_enable_grafana
+      - >-
+        (edge_obs_public_thanos_host | default('') | trim | length) == 0
+        or edge_obs_enable_query
+    fail_msg: >-
+      edge_obs_enable_public_proxy requires at least one public hostname, and each hostname must map
+      to an enabled service (Grafana or Thanos Query).
+  when:
+    - edge_obs_state == "present"
+    - edge_obs_enable_public_proxy
+
 - name: Preflight | compute query upstreams when empty
   ansible.builtin.set_fact:
     edge_obs_query_upstreams_effective: >-
@@ -170,6 +189,20 @@
     - edge_obs_state == "present"
     - edge_obs_enable_alertmanager
 
+- name: Ensure public proxy data directories (present)
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+  loop:
+    - "{{ edge_obs_public_proxy_data_dir }}"
+    - "{{ edge_obs_public_proxy_config_dir }}"
+  when:
+    - edge_obs_state == "present"
+    - edge_obs_enable_public_proxy
+
 - name: Write Grafana env file
   ansible.builtin.copy:
     dest: "{{ edge_obs_env_path }}"
@@ -242,6 +275,18 @@
     - edge_obs_state == "present"
     - edge_obs_enable_grafana
     - edge_obs_enable_burst_dashboard
+  notify: Restart edge observability
+
+- name: Render public proxy config
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: "{{ edge_obs_public_proxy_caddyfile_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - edge_obs_state == "present"
+    - edge_obs_enable_public_proxy
   notify: Restart edge observability
 
 - name: Render Prometheus config
@@ -340,6 +385,7 @@
           + (edge_obs_enable_prometheus | ternary(['prometheus'], []))
           + (edge_obs_enable_blackbox_exporter | ternary(['blackbox-exporter'], []))
           + (edge_obs_enable_thanos_sidecar | ternary(['thanos-sidecar'], []))
+          + (edge_obs_enable_public_proxy | ternary(['caddy'], []))
       }}"
   when: edge_obs_state == "present"
 
@@ -447,3 +493,40 @@
   when:
     - edge_obs_state == "present"
     - edge_obs_enable_alertmanager
+
+- name: Wait for public Grafana proxy readiness
+  ansible.builtin.uri:
+    url: "http://127.0.0.1/login"
+    headers:
+      Host: "{{ edge_obs_public_grafana_host }}"
+    status_code:
+      - 200
+      - 302
+      - 303
+    follow_redirects: none
+  register: edge_obs_public_grafana_proxy_health
+  retries: "{{ edge_obs_startup_retries | int }}"
+  delay: "{{ edge_obs_startup_delay_s | int }}"
+  until: edge_obs_public_grafana_proxy_health.status in [200, 302, 303]
+  when:
+    - edge_obs_state == "present"
+    - edge_obs_enable_public_proxy
+    - (edge_obs_public_grafana_host | default('') | trim | length) > 0
+
+- name: Wait for public Thanos proxy readiness
+  ansible.builtin.uri:
+    url: "http://127.0.0.1/api/v1/query?query=up"
+    headers:
+      Host: "{{ edge_obs_public_thanos_host }}"
+    status_code: 200
+    return_content: true
+  register: edge_obs_public_thanos_proxy_health
+  retries: "{{ edge_obs_startup_retries | int }}"
+  delay: "{{ edge_obs_startup_delay_s | int }}"
+  until:
+    - edge_obs_public_thanos_proxy_health.status == 200
+    - edge_obs_public_thanos_proxy_health.json.status | default('') == 'success'
+  when:
+    - edge_obs_state == "present"
+    - edge_obs_enable_public_proxy
+    - (edge_obs_public_thanos_host | default('') | trim | length) > 0

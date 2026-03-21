@@ -37,6 +37,7 @@ edge_obs_enable_ruler: true
 edge_obs_enable_prometheus: false
 edge_obs_enable_blackbox_exporter: false
 edge_obs_enable_thanos_sidecar: false
+edge_obs_enable_public_proxy: false
 
 edge_obs_receive_remote_write_port: 10907
 edge_obs_query_http_port: 10902
@@ -44,6 +45,8 @@ edge_obs_grafana_http_port: 3000
 edge_obs_alertmanager_http_port: 9093
 edge_obs_prometheus_http_port: 9090
 edge_obs_blackbox_exporter_http_port: 9115
+edge_obs_public_http_port: 80
+edge_obs_public_https_port: 443
 
 # Raw YAML content for Thanos objstore.yml
 edge_obs_objstore_config: ""
@@ -67,6 +70,13 @@ edge_obs_enable_burst_dashboard: false
 edge_obs_grafana_dashboards_dir: "{{ edge_obs_config_dir }}/grafana-dashboards"
 edge_obs_grafana_dashboard_provider_path: "{{ edge_obs_config_dir }}/grafana-dashboards.yaml"
 edge_obs_burst_dashboard_title: "HybridOps Burst Control"
+edge_obs_public_proxy_image: "caddy:2.10.2"
+edge_obs_public_proxy_caddyfile_path: "{{ edge_obs_config_dir }}/Caddyfile"
+edge_obs_public_proxy_data_dir: "{{ edge_obs_data_dir }}/caddy"
+edge_obs_public_proxy_config_dir: "{{ edge_obs_data_dir }}/caddy_config"
+edge_obs_public_contact_email: ""
+edge_obs_public_grafana_host: ""
+edge_obs_public_thanos_host: ""
 
 # Grafana admin credentials (prefer vault)
 edge_obs_grafana_admin_user: "admin"

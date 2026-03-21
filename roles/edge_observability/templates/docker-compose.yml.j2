@@ -120,7 +120,7 @@ services:
       - --store={{ store }}
 {% endfor %}
     ports:
-      - "{{ edge_obs_query_http_port }}:10902"
+      - "127.0.0.1:{{ edge_obs_query_http_port }}:10902"
     restart: unless-stopped
     logging:
       driver: json-file
@@ -163,7 +163,7 @@ services:
       - "{{ edge_obs_config_dir }}/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro"
       - "{{ edge_obs_data_dir }}/alertmanager:/alertmanager"
     ports:
-      - "{{ edge_obs_alertmanager_http_port }}:9093"
+      - "127.0.0.1:{{ edge_obs_alertmanager_http_port }}:9093"
     restart: unless-stopped
     logging:
       driver: json-file
@@ -185,7 +185,34 @@ services:
 {% endif %}
       - "{{ edge_obs_data_dir }}/grafana:/var/lib/grafana"
     ports:
-      - "{{ edge_obs_grafana_http_port }}:3000"
+      - "127.0.0.1:{{ edge_obs_grafana_http_port }}:3000"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "{{ edge_obs_docker_log_max_size }}"
+        max-file: "{{ edge_obs_docker_log_max_file }}"
+{% endif %}
+
+{% if edge_obs_enable_public_proxy %}
+  caddy:
+    image: {{ edge_obs_public_proxy_image }}
+    volumes:
+      - "{{ edge_obs_public_proxy_caddyfile_path }}:/etc/caddy/Caddyfile:ro"
+      - "{{ edge_obs_public_proxy_data_dir }}:/data"
+      - "{{ edge_obs_public_proxy_config_dir }}:/config"
+    ports:
+      - "{{ edge_obs_public_http_port }}:80"
+      - "{{ edge_obs_public_https_port }}:443"
+{% if (edge_obs_public_grafana_host | default('') | trim | length) > 0 or (edge_obs_public_thanos_host | default('') | trim | length) > 0 %}
+    depends_on:
+{% if (edge_obs_public_grafana_host | default('') | trim | length) > 0 %}
+      - grafana
+{% endif %}
+{% if (edge_obs_public_thanos_host | default('') | trim | length) > 0 %}
+      - thanos-query
+{% endif %}
+{% endif %}
     restart: unless-stopped
     logging:
       driver: json-file

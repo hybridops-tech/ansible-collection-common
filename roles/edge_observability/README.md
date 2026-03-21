@@ -11,6 +11,7 @@ This role deploys a lightweight observability stack on the edge (non-Kubernetes)
 - Grafana
 - Alertmanager
 - Thanos Ruler (optional)
+- Optional public reverse proxy for Grafana and Thanos Query
 
 It is designed to run alongside the WAN edge role, but remains operationally isolated.
 
@@ -34,6 +35,9 @@ Key inputs:
 - `edge_obs_query_upstreams` (optional; defaults to local services)
 - `edge_obs_alertmanager_config` (YAML)
 - `edge_obs_grafana_admin_password` (use vault)
+- `edge_obs_enable_public_proxy`
+- `edge_obs_public_grafana_host`
+- `edge_obs_public_thanos_host`
 
 ## Behaviour
 
@@ -41,6 +45,8 @@ Key inputs:
 - Generates `docker-compose.yml` and a systemd unit.
 - Uses Docker restart policies and systemd to survive reboots.
 - Applies log rotation via Docker json-file limits.
+- Keeps Grafana and Thanos Query bound to loopback when the public proxy path is enabled.
+- Exposes only the reverse proxy on public `80` and `443` when configured.
 
 ## Example playbook
 
