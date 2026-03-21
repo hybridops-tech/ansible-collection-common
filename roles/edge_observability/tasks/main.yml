@@ -501,13 +501,15 @@
       Host: "{{ edge_obs_public_grafana_host }}"
     status_code:
       - 200
+      - 301
       - 302
       - 303
+      - 308
     follow_redirects: none
   register: edge_obs_public_grafana_proxy_health
   retries: "{{ edge_obs_startup_retries | int }}"
   delay: "{{ edge_obs_startup_delay_s | int }}"
-  until: edge_obs_public_grafana_proxy_health.status in [200, 302, 303]
+  until: edge_obs_public_grafana_proxy_health.status in [200, 301, 302, 303, 308]
   when:
     - edge_obs_state == "present"
     - edge_obs_enable_public_proxy
@@ -518,14 +520,23 @@
     url: "http://127.0.0.1/api/v1/query?query=up"
     headers:
       Host: "{{ edge_obs_public_thanos_host }}"
-    status_code: 200
+    status_code:
+      - 200
+      - 301
+      - 302
+      - 303
+      - 308
     return_content: true
+    follow_redirects: none
   register: edge_obs_public_thanos_proxy_health
   retries: "{{ edge_obs_startup_retries | int }}"
   delay: "{{ edge_obs_startup_delay_s | int }}"
   until:
-    - edge_obs_public_thanos_proxy_health.status == 200
-    - edge_obs_public_thanos_proxy_health.json.status | default('') == 'success'
+    - >-
+        edge_obs_public_thanos_proxy_health.status in [200, 301, 302, 303, 308]
+    - >-
+        edge_obs_public_thanos_proxy_health.status != 200
+        or edge_obs_public_thanos_proxy_health.json.status | default('') == 'success'
   when:
     - edge_obs_state == "present"
     - edge_obs_enable_public_proxy
