@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- No unreleased changes yet.
+### Added
+
+- `vyos_site_extension_onprem` can now derive consumer SNAT source and
+  destination CIDRs from state-backed cloud prefixes and static route prefixes.
+- `vyos_site_extension_onprem` can now derive the consumer SNAT translation
+  address from `onprem_router_id` when that is the intended edge translation
+  address.
 
 ## [0.1.5] - 2026-03-14
 

@@ -140,6 +140,70 @@
     vyos_site_extension_onprem_consumer_snat_rules: []
   changed_when: false
 
+- name: Build effective on-prem consumer SNAT source CIDRs
+  ansible.builtin.set_fact:
+    vyos_site_extension_onprem_consumer_snat_source_cidrs_effective: >-
+      {{
+        (
+          (consumer_snat_source_cidrs | default([]))
+          + (
+            ((auto_include_cloud_core_cidr_in_consumer_snat_source | default(false) | bool)
+             and (cloud_core_cidr | default('', true) | string | trim | length > 0))
+            | ternary([cloud_core_cidr | default('', true) | string | trim], [])
+          )
+          + (
+            ((auto_include_cloud_workloads_cidr_in_consumer_snat_source | default(false) | bool)
+             and (cloud_workloads_cidr | default('', true) | string | trim | length > 0))
+            | ternary([cloud_workloads_cidr | default('', true) | string | trim], [])
+          )
+          + (
+            ((auto_include_cloud_workloads_pods_cidr_in_consumer_snat_source | default(false) | bool)
+             and (cloud_workloads_pods_cidr | default('', true) | string | trim | length > 0))
+            | ternary([cloud_workloads_pods_cidr | default('', true) | string | trim], [])
+          )
+        )
+        | map('string')
+        | map('trim')
+        | reject('equalto', '')
+        | unique
+        | list
+      }}
+  changed_when: false
+
+- name: Build effective on-prem consumer SNAT destination CIDRs
+  ansible.builtin.set_fact:
+    vyos_site_extension_onprem_consumer_snat_destination_cidrs_effective: >-
+      {{
+        (
+          (consumer_snat_destination_cidrs | default([]))
+          + (
+            (auto_include_static_route_prefixes_in_consumer_snat_destination | default(false) | bool)
+            | ternary((static_route_prefixes | default([])), [])
+          )
+        )
+        | map('string')
+        | map('trim')
+        | reject('equalto', '')
+        | unique
+        | list
+      }}
+  changed_when: false
+
+- name: Build effective on-prem consumer SNAT translation address
+  ansible.builtin.set_fact:
+    vyos_site_extension_onprem_consumer_snat_translation_address_effective: >-
+      {{
+        (
+          (consumer_snat_translation_address | default('', true) | string | trim)
+          if (consumer_snat_translation_address | default('', true) | string | trim | length > 0)
+          else (
+            (consumer_snat_translation_address_from_onprem_router_id | default(false) | bool)
+            | ternary((onprem_router_id | default('', true) | string | trim), '')
+          )
+        )
+      }}
+  changed_when: false
+
 - name: Expand on-prem consumer SNAT rule matrix
   ansible.builtin.set_fact:
     vyos_site_extension_onprem_consumer_snat_rules: >-
@@ -154,7 +218,12 @@
         ]
       }}
   changed_when: false
-  loop: "{{ consumer_snat_source_cidrs | product(consumer_snat_destination_cidrs) | list }}"
+  loop: >-
+    {{
+      vyos_site_extension_onprem_consumer_snat_source_cidrs_effective
+      | product(vyos_site_extension_onprem_consumer_snat_destination_cidrs_effective)
+      | list
+    }}
   loop_control:
     index_var: vyos_site_extension_onprem_consumer_snat_rule_index
     label: "{{ item.0 }} -> {{ item.1 }}"
@@ -167,9 +236,11 @@
     that:
       - (consumer_snat_rule_base | int) > 0
       - (consumer_snat_rule_slots | int) > 0
-      - (consumer_snat_source_cidrs | length) > 0
-      - (consumer_snat_destination_cidrs | length) > 0
-      - (consumer_snat_translation_address | default('', true) | string | trim | length) > 0
+      - (vyos_site_extension_onprem_consumer_snat_source_cidrs_effective | length) > 0
+      - (vyos_site_extension_onprem_consumer_snat_destination_cidrs_effective | length) > 0
+      - >-
+        (vyos_site_extension_onprem_consumer_snat_translation_address_effective
+        | default('', true) | string | trim | length) > 0
       - (consumer_snat_outbound_interface | default('', true) | string | trim | length) > 0
       - >-
         (vyos_site_extension_onprem_consumer_snat_rules | length)
@@ -293,7 +364,8 @@
     set nat source rule '{{ item.rule_id }}' outbound-interface '{{ consumer_snat_outbound_interface }}'
     set nat source rule '{{ item.rule_id }}' source address '{{ item.source_cidr }}'
     set nat source rule '{{ item.rule_id }}' destination address '{{ item.destination_cidr }}'
-    set nat source rule '{{ item.rule_id }}' translation address '{{ consumer_snat_translation_address }}'
+    set nat source rule '{{ item.rule_id }}' translation address \
+      '{{ vyos_site_extension_onprem_consumer_snat_translation_address_effective }}'
     {% endfor %}
     {% endif %}
 
