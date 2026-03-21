@@ -70,27 +70,73 @@ jobs:
       - name: Run pre-commit
         shell: bash
         run: |
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          else
-            BASE_SHA="${{ github.event.before }}"
-          fi
-          if [ -z "${BASE_SHA}" ] || printf '%s' "${BASE_SHA}" | grep -Eq '^0+$'; then
-            BASE_SHA="$(git rev-list --max-parents=0 HEAD | tail -n1)"
-          fi
+          resolve_base_sha() {
+            local event_name="${1}"
+            local ref_type="${2}"
+            local before_sha="${3}"
+            local pr_base_sha="${4}"
+
+            if [ "${event_name}" = "pull_request" ]; then
+              printf '%s\n' "${pr_base_sha}"
+              return
+            fi
+
+            if [ "${ref_type}" = "tag" ] && git rev-parse HEAD^ >/dev/null 2>&1; then
+              git rev-parse HEAD^
+              return
+            fi
+
+            if [ -n "${before_sha}" ] && ! printf '%s' "${before_sha}" | grep -Eq '^0+$'; then
+              printf '%s\n' "${before_sha}"
+              return
+            fi
+
+            git rev-list --max-parents=0 HEAD | tail -n1
+          }
+
+          BASE_SHA="$(
+            resolve_base_sha \
+              "${GITHUB_EVENT_NAME}" \
+              "${{ github.ref_type }}" \
+              "${{ github.event.before }}" \
+              "${{ github.event.pull_request.base.sha }}"
+          )"
           pre-commit run --from-ref "${BASE_SHA}" --to-ref HEAD
 
       - name: Run ansible-lint on changed Ansible files
         shell: bash
         run: |
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          else
-            BASE_SHA="${{ github.event.before }}"
-          fi
-          if [ -z "${BASE_SHA}" ] || printf '%s' "${BASE_SHA}" | grep -Eq '^0+$'; then
-            BASE_SHA="$(git rev-list --max-parents=0 HEAD | tail -n1)"
-          fi
+          resolve_base_sha() {
+            local event_name="${1}"
+            local ref_type="${2}"
+            local before_sha="${3}"
+            local pr_base_sha="${4}"
+
+            if [ "${event_name}" = "pull_request" ]; then
+              printf '%s\n' "${pr_base_sha}"
+              return
+            fi
+
+            if [ "${ref_type}" = "tag" ] && git rev-parse HEAD^ >/dev/null 2>&1; then
+              git rev-parse HEAD^
+              return
+            fi
+
+            if [ -n "${before_sha}" ] && ! printf '%s' "${before_sha}" | grep -Eq '^0+$'; then
+              printf '%s\n' "${before_sha}"
+              return
+            fi
+
+            git rev-list --max-parents=0 HEAD | tail -n1
+          }
+
+          BASE_SHA="$(
+            resolve_base_sha \
+              "${GITHUB_EVENT_NAME}" \
+              "${{ github.ref_type }}" \
+              "${{ github.event.before }}" \
+              "${{ github.event.pull_request.base.sha }}"
+          )"
           mapfile -t LINT_TARGETS < <(
             git diff --name-only --diff-filter=ACMR "${BASE_SHA}" HEAD -- \
               galaxy.yml \
