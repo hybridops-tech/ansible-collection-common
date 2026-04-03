@@ -27,6 +27,11 @@ tags:
   - linux
   - governance
   - connectivity
+  - proxmox
+  - hybrid
+  - kubernetes
+  - devops
+  - platform
 
 homepage: https://hybridops.tech
 documentation: https://docs.hybridops.tech
