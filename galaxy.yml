@@ -5,7 +5,7 @@
 
 namespace: hybridops
 name: common
-version: "0.1.5"
+version: "0.1.6"
 
 readme: README.md
 description: >-
@@ -35,20 +35,36 @@ tags:
 
 homepage: https://hybridops.tech
 documentation: https://docs.hybridops.tech
-repository: https://github.com/hybridops-tech/ansible-collection-common
-issues: https://github.com/hybridops-tech/ansible-collection-common/issues
+repository: https://galaxy.ansible.com/hybridops/common
+issues: https://hybridops.tech/contact
 
 dependencies: {}
 
 build_ignore:
   - .git
+  - .gitignore
   - .github
+  - .ansible
+  - .config/linters/.ansible
+  - .config/linters/.ansible/**
   - .tox
   - .venv
+  - "*.tar.gz"
   - build
   - dist
   - output
+  - roles/*/.github
+  - roles/*/.github/**
+  - roles/*/.showcase
+  - roles/*/.showcase/**
+  - roles/*/tests/output
+  - roles/*/tests/output/**
+  - roles/*/tests/outputs
+  - roles/*/tests/outputs/**
   - tests/output
+  - tests/output/**
+  - tests/outputs
+  - tests/outputs/**
   - __pycache__
   - .mypy_cache
   - .pytest_cache
