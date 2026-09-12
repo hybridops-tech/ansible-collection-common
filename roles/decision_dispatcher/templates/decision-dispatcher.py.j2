@@ -7,6 +7,7 @@ maintainer: HybridOps
 from __future__ import annotations
 
 import datetime
+import hashlib
 import json
 import time
 import uuid
@@ -17,6 +18,7 @@ CONFIG_PATH = ROOT / "config" / "config.json"
 STATE_PATH = ROOT / "state" / "state.json"
 LOG_PATH = ROOT / "logs" / "dispatcher.log"
 REQUESTS_DIR = ROOT / "state" / "requests"
+APPROVAL_PAYLOAD_VERSION = 1
 
 
 def _utc_now() -> str:
@@ -62,6 +64,31 @@ def _route_key_for(decision: dict) -> str:
     return token
 
 
+def _approval_payload(request: dict) -> dict:
+    return {
+        "version": APPROVAL_PAYLOAD_VERSION,
+        "source_decision_id": str(request.get("source_decision_id") or ""),
+        "decision_type": str(request.get("decision_type") or ""),
+        "execution_plane": str(request.get("execution_plane") or ""),
+        "target_kind": str(request.get("target_kind") or ""),
+        "target_ref": str(request.get("target_ref") or ""),
+        "target_env": str(request.get("target_env") or ""),
+        "requires_approval": bool(request.get("requires_approval", True)),
+        "rationale": str(request.get("rationale") or ""),
+        "checks": request.get("checks") if isinstance(request.get("checks"), list) else [],
+    }
+
+
+def _approval_artifact_sha256(request: dict) -> str:
+    encoded = json.dumps(
+        _approval_payload(request),
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _emit_dispatch_request(*, decision: dict, route: dict, config: dict) -> dict:
     route_key = _route_key_for(decision)
     dispatch_id = (
@@ -86,6 +113,8 @@ def _emit_dispatch_request(*, decision: dict, route: dict, config: dict) -> dict
         "rationale": str(decision.get("rationale") or decision.get("reason") or ""),
         "checks": decision.get("checks") if isinstance(decision.get("checks"), list) else [],
     }
+    payload["approval_payload_version"] = APPROVAL_PAYLOAD_VERSION
+    payload["approval_artifact_sha256"] = _approval_artifact_sha256(payload)
     request_path = REQUESTS_DIR / f"{dispatch_id}.json"
     REQUESTS_DIR.mkdir(parents=True, exist_ok=True)
     _write_json(request_path, payload)
@@ -93,6 +122,7 @@ def _emit_dispatch_request(*, decision: dict, route: dict, config: dict) -> dict
         "dispatch_id": dispatch_id,
         "request_file": str(request_path),
         "status": status,
+        "approval_artifact_sha256": payload["approval_artifact_sha256"],
     }
 
 
@@ -139,6 +169,7 @@ def _process(config: dict, prior: dict) -> dict:
                 "status": dispatch_result.get("status"),
                 "dispatch_id": dispatch_result.get("dispatch_id"),
                 "request_file": dispatch_result.get("request_file"),
+                "approval_artifact_sha256": dispatch_result.get("approval_artifact_sha256"),
                 "timestamp_utc": _utc_now(),
             }
             last_decision_id = decision_id
