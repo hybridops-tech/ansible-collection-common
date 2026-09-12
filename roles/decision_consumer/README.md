@@ -29,3 +29,5 @@ Immediately before promotion, the consumer recomputes the SHA-256 digest from th
 `approved_by` and `approved_at` must be non-empty strings. An approval without that audit context is not promoted.
 
 Every request must retain the identity written by the dispatcher. Routes with `requires_approval: false` keep their existing no-approval behavior after that identity is verified. Their execution records still carry the current artefact identity for provenance.
+
+The digest binds content; it does not authenticate filesystem writers. Access to the request and approval directories remains a trusted boundary.
