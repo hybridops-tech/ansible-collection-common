@@ -7,6 +7,7 @@ maintainer: HybridOps
 from __future__ import annotations
 
 import datetime
+import hashlib
 import json
 import time
 import uuid
@@ -16,6 +17,7 @@ ROOT = Path("{{ decision_consumer_root }}")
 CONFIG_PATH = ROOT / "config" / "config.json"
 STATE_PATH = ROOT / "state" / "state.json"
 LOG_PATH = ROOT / "logs" / "consumer.log"
+APPROVAL_PAYLOAD_VERSION = 1
 
 
 def _utc_now() -> str:
@@ -28,7 +30,8 @@ def _utc_now_token() -> str:
 
 def _read_json(path: Path) -> dict:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return payload if isinstance(payload, dict) else {}
     except Exception:
         return {}
 
@@ -56,7 +59,48 @@ def _sanitize_token(value: str) -> str:
     return token or "execution"
 
 
-def _emit_execution_record(*, request: dict, approval: dict, config: dict, executions_dir: Path) -> dict:
+def _approval_payload(request: dict) -> dict:
+    return {
+        "version": APPROVAL_PAYLOAD_VERSION,
+        "source_decision_id": str(request.get("source_decision_id") or ""),
+        "decision_type": str(request.get("decision_type") or ""),
+        "execution_plane": str(request.get("execution_plane") or ""),
+        "target_kind": str(request.get("target_kind") or ""),
+        "target_ref": str(request.get("target_ref") or ""),
+        "target_env": str(request.get("target_env") or ""),
+        "requires_approval": bool(request.get("requires_approval", True)),
+        "rationale": str(request.get("rationale") or ""),
+        "checks": request.get("checks") if isinstance(request.get("checks"), list) else [],
+    }
+
+
+def _approval_artifact_sha256(request: dict) -> str:
+    encoded = json.dumps(
+        _approval_payload(request),
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _is_sha256(value: object) -> bool:
+    token = value if isinstance(value, str) else ""
+    return len(token) == 64 and all(char in "0123456789abcdef" for char in token)
+
+
+def _is_non_empty_string(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _emit_execution_record(
+    *,
+    request: dict,
+    approval: dict,
+    config: dict,
+    executions_dir: Path,
+    approval_artifact_sha256: str,
+) -> dict:
     dispatch_id = str(request.get("dispatch_id") or "")
     execution_id = (
         f"execution-{_utc_now_token()}-"
@@ -68,6 +112,8 @@ def _emit_execution_record(*, request: dict, approval: dict, config: dict, execu
         "status": "approved-ready",
         "execution_mode": str(config.get("execution_mode") or "approval-only"),
         "source_dispatch_id": dispatch_id,
+        "approval_payload_version": APPROVAL_PAYLOAD_VERSION,
+        "approval_artifact_sha256": approval_artifact_sha256,
         "decision_type": str(request.get("decision_type") or ""),
         "execution_plane": str(request.get("execution_plane") or ""),
         "target_kind": str(request.get("target_kind") or ""),
@@ -78,7 +124,11 @@ def _emit_execution_record(*, request: dict, approval: dict, config: dict, execu
         "approval": {
             "required": bool(request.get("requires_approval", config.get("require_approval", True))),
             "approval_file": str(approval.get("_source_file") or ""),
+            "dispatch_id": str(approval.get("dispatch_id") or ""),
+            "payload_version": approval.get("approval_payload_version"),
+            "artifact_sha256": str(approval.get("approval_artifact_sha256") or ""),
             "approved_by": str(approval.get("approved_by") or ""),
+            "approved_at": str(approval.get("approved_at") or ""),
             "note": str(approval.get("note") or ""),
         },
     }
@@ -110,12 +160,39 @@ def _process(config: dict, prior: dict) -> dict:
     if requests_dir.exists():
         for path in sorted(requests_dir.glob("*.json")):
             request = _read_json(path)
-            dispatch_id = str(request.get("dispatch_id") or path.stem).strip()
-            if not dispatch_id or dispatch_id in processed:
+            dispatch_id = str(request.get("dispatch_id") or "").strip()
+            if dispatch_id in processed:
+                continue
+            if not dispatch_id or dispatch_id != path.stem:
+                pending_count += 1
+                last_request_id = path.stem
+                last_reason = f"invalid-approval-identity:{path.stem}"
                 continue
 
             last_request_id = dispatch_id
-            needs_approval = bool(request.get("requires_approval", require_approval))
+            approval_posture = request.get("requires_approval", require_approval)
+            if not isinstance(approval_posture, bool):
+                pending_count += 1
+                last_reason = f"invalid-approval-identity:{dispatch_id}"
+                continue
+
+            needs_approval = approval_posture
+            canonical_request = dict(request)
+            canonical_request["requires_approval"] = approval_posture
+            current_artifact_sha256 = _approval_artifact_sha256(canonical_request)
+            declared_version = request.get("approval_payload_version")
+            declared_artifact_sha256 = request.get("approval_artifact_sha256")
+            if declared_version != APPROVAL_PAYLOAD_VERSION or not _is_sha256(
+                declared_artifact_sha256
+            ):
+                pending_count += 1
+                last_reason = f"invalid-approval-identity:{dispatch_id}"
+                continue
+            if declared_artifact_sha256 != current_artifact_sha256:
+                pending_count += 1
+                last_reason = f"stale-approval:{dispatch_id}"
+                continue
+
             approval = {}
             if needs_approval:
                 approval_path = approvals_dir / f"{dispatch_id}.approved.json"
@@ -126,16 +203,41 @@ def _process(config: dict, prior: dict) -> dict:
                 approval = _read_json(approval_path)
                 approval["_source_file"] = str(approval_path)
 
+                approval_dispatch_id = str(approval.get("dispatch_id") or "").strip()
+                approval_version = approval.get("approval_payload_version")
+                approval_artifact_sha256 = approval.get("approval_artifact_sha256")
+                if (
+                    approval_dispatch_id != dispatch_id
+                    or approval_version != APPROVAL_PAYLOAD_VERSION
+                    or not _is_sha256(approval_artifact_sha256)
+                ):
+                    pending_count += 1
+                    last_reason = f"invalid-approval-identity:{dispatch_id}"
+                    continue
+                if approval_artifact_sha256 != current_artifact_sha256:
+                    pending_count += 1
+                    last_reason = f"stale-approval:{dispatch_id}"
+                    continue
+                if not (
+                    _is_non_empty_string(approval.get("approved_by"))
+                    and _is_non_empty_string(approval.get("approved_at"))
+                ):
+                    pending_count += 1
+                    last_reason = f"invalid-approval-context:{dispatch_id}"
+                    continue
+
             result = _emit_execution_record(
                 request=request,
                 approval=approval,
                 config=config,
                 executions_dir=executions_dir,
+                approval_artifact_sha256=current_artifact_sha256,
             )
             processed[dispatch_id] = {
                 "status": result.get("status"),
                 "execution_id": result.get("execution_id"),
                 "execution_file": result.get("execution_file"),
+                "approval_artifact_sha256": current_artifact_sha256,
                 "timestamp_utc": _utc_now(),
             }
             last_execution_id = str(result.get("execution_id") or "")
