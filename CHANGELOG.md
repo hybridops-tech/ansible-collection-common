@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- No unreleased changes yet.
+
+## [0.1.7] - 2026-09-12
+
 ### Changed
 
 - Bound decision requests to a deterministic SHA-256 identity of the approval-relevant artefact. The consumer verifies that identity before applying the request's approval posture, rejects invalid or stale approval and incomplete audit context, and preserves the approved identity in the execution record.
