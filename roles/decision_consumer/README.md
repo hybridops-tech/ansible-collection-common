@@ -26,4 +26,6 @@ The approval file remains named `<dispatch_id>.approved.json`, but its contents 
 
 Immediately before promotion, the consumer recomputes the SHA-256 digest from the current approval-relevant request contents. Promotion is refused when the request identity is missing, when the approval references another request identity, or when the artefact no longer matches what was approved. A stale or invalid approval never produces `approved-ready`.
 
-Routes with `requires_approval: false` keep their existing no-approval behavior. Their execution records still carry the current artefact identity for provenance.
+`approved_by` and `approved_at` must be non-empty strings. An approval without that audit context is not promoted.
+
+Every request must retain the identity written by the dispatcher. Routes with `requires_approval: false` keep their existing no-approval behavior after that identity is verified. Their execution records still carry the current artefact identity for provenance.

@@ -30,7 +30,8 @@ def _utc_now_token() -> str:
 
 def _read_json(path: Path) -> dict:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return payload if isinstance(payload, dict) else {}
     except Exception:
         return {}
 
@@ -81,6 +82,15 @@ def _approval_artifact_sha256(request: dict) -> str:
         sort_keys=True,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _is_sha256(value: object) -> bool:
+    token = value if isinstance(value, str) else ""
+    return len(token) == 64 and all(char in "0123456789abcdef" for char in token)
+
+
+def _is_non_empty_string(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
 
 
 def _emit_execution_record(
@@ -150,26 +160,41 @@ def _process(config: dict, prior: dict) -> dict:
     if requests_dir.exists():
         for path in sorted(requests_dir.glob("*.json")):
             request = _read_json(path)
-            dispatch_id = str(request.get("dispatch_id") or path.stem).strip()
-            if not dispatch_id or dispatch_id in processed:
+            dispatch_id = str(request.get("dispatch_id") or "").strip()
+            if dispatch_id in processed:
+                continue
+            if not dispatch_id or dispatch_id != path.stem:
+                pending_count += 1
+                last_request_id = path.stem
+                last_reason = f"invalid-approval-identity:{path.stem}"
                 continue
 
             last_request_id = dispatch_id
-            needs_approval = bool(request.get("requires_approval", require_approval))
-            current_artifact_sha256 = _approval_artifact_sha256(request)
+            approval_posture = request.get("requires_approval", require_approval)
+            if not isinstance(approval_posture, bool):
+                pending_count += 1
+                last_reason = f"invalid-approval-identity:{dispatch_id}"
+                continue
+
+            needs_approval = approval_posture
+            canonical_request = dict(request)
+            canonical_request["requires_approval"] = approval_posture
+            current_artifact_sha256 = _approval_artifact_sha256(canonical_request)
+            declared_version = request.get("approval_payload_version")
+            declared_artifact_sha256 = request.get("approval_artifact_sha256")
+            if declared_version != APPROVAL_PAYLOAD_VERSION or not _is_sha256(
+                declared_artifact_sha256
+            ):
+                pending_count += 1
+                last_reason = f"invalid-approval-identity:{dispatch_id}"
+                continue
+            if declared_artifact_sha256 != current_artifact_sha256:
+                pending_count += 1
+                last_reason = f"stale-approval:{dispatch_id}"
+                continue
+
             approval = {}
             if needs_approval:
-                declared_version = request.get("approval_payload_version")
-                declared_artifact_sha256 = str(request.get("approval_artifact_sha256") or "").strip()
-                if declared_version != APPROVAL_PAYLOAD_VERSION or not declared_artifact_sha256:
-                    pending_count += 1
-                    last_reason = f"invalid-approval-identity:{dispatch_id}"
-                    continue
-                if declared_artifact_sha256 != current_artifact_sha256:
-                    pending_count += 1
-                    last_reason = f"stale-approval:{dispatch_id}"
-                    continue
-
                 approval_path = approvals_dir / f"{dispatch_id}.approved.json"
                 if not approval_path.exists():
                     pending_count += 1
@@ -180,11 +205,11 @@ def _process(config: dict, prior: dict) -> dict:
 
                 approval_dispatch_id = str(approval.get("dispatch_id") or "").strip()
                 approval_version = approval.get("approval_payload_version")
-                approval_artifact_sha256 = str(approval.get("approval_artifact_sha256") or "").strip()
+                approval_artifact_sha256 = approval.get("approval_artifact_sha256")
                 if (
                     approval_dispatch_id != dispatch_id
                     or approval_version != APPROVAL_PAYLOAD_VERSION
-                    or not approval_artifact_sha256
+                    or not _is_sha256(approval_artifact_sha256)
                 ):
                     pending_count += 1
                     last_reason = f"invalid-approval-identity:{dispatch_id}"
@@ -192,6 +217,13 @@ def _process(config: dict, prior: dict) -> dict:
                 if approval_artifact_sha256 != current_artifact_sha256:
                     pending_count += 1
                     last_reason = f"stale-approval:{dispatch_id}"
+                    continue
+                if not (
+                    _is_non_empty_string(approval.get("approved_by"))
+                    and _is_non_empty_string(approval.get("approved_at"))
+                ):
+                    pending_count += 1
+                    last_reason = f"invalid-approval-context:{dispatch_id}"
                     continue
 
             result = _emit_execution_record(

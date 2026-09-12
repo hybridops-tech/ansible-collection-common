@@ -148,9 +148,150 @@ class ApprovalBindingTests(unittest.TestCase):
         self.assertEqual(state["reason"], f"stale-approval:{request['dispatch_id']}")
         self.assertEqual(self._execution_records(), [])
 
+        self._write_approval(request)
+        retried = self.consumer["_process"](self._consumer_config(), state)
+
+        self.assertEqual(retried["processed_count"], 1)
+        self.assertEqual(retried["pending_count"], 0)
+        self.assertEqual(len(self._execution_records()), 1)
+
+    def test_request_digest_tampering_is_rejected(self) -> None:
+        request = self._dispatch()
+        request["approval_artifact_sha256"] = "0" * 64
+        _write_json(self.requests_dir / f"{request['dispatch_id']}.json", request)
+
+        state = self.consumer["_process"](self._consumer_config(), {})
+
+        self.assertEqual(state["processed_count"], 0)
+        self.assertEqual(state["pending_count"], 1)
+        self.assertEqual(state["reason"], f"stale-approval:{request['dispatch_id']}")
+        self.assertEqual(self._execution_records(), [])
+
+    def test_request_dispatch_id_must_match_its_filename(self) -> None:
+        request = self._dispatch()
+        original_dispatch_id = request["dispatch_id"]
+        request["dispatch_id"] = "../../another-request"
+        _write_json(self.requests_dir / f"{original_dispatch_id}.json", request)
+
+        state = self.consumer["_process"](self._consumer_config(), {})
+
+        self.assertEqual(state["processed_count"], 0)
+        self.assertEqual(state["pending_count"], 1)
+        self.assertEqual(
+            state["reason"],
+            f"invalid-approval-identity:{original_dispatch_id}",
+        )
+        self.assertEqual(self._execution_records(), [])
+
+    def test_wrong_request_payload_version_is_rejected(self) -> None:
+        request = self._dispatch()
+        request["approval_payload_version"] = 2
+        _write_json(self.requests_dir / f"{request['dispatch_id']}.json", request)
+
+        state = self.consumer["_process"](self._consumer_config(), {})
+
+        self.assertEqual(state["processed_count"], 0)
+        self.assertEqual(state["pending_count"], 1)
+        self.assertEqual(
+            state["reason"],
+            f"invalid-approval-identity:{request['dispatch_id']}",
+        )
+        self.assertEqual(self._execution_records(), [])
+
+    def test_approval_posture_cannot_be_changed_to_bypass_approval(self) -> None:
+        request = self._dispatch()
+        request["requires_approval"] = False
+        _write_json(self.requests_dir / f"{request['dispatch_id']}.json", request)
+
+        state = self.consumer["_process"](self._consumer_config(), {})
+
+        self.assertEqual(state["processed_count"], 0)
+        self.assertEqual(state["pending_count"], 1)
+        self.assertEqual(state["reason"], f"stale-approval:{request['dispatch_id']}")
+        self.assertEqual(self._execution_records(), [])
+
+    def test_rationale_and_checks_are_approval_relevant(self) -> None:
+        request = self._dispatch()
+        original_digest = request["approval_artifact_sha256"]
+        mutations = (
+            {"rationale": "operator selected another recovery path"},
+            {"checks": [{"name": "primary_ready", "status": "passed"}]},
+        )
+
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                changed = dict(request)
+                changed.update(mutation)
+                self.assertNotEqual(
+                    self.consumer["_approval_artifact_sha256"](changed),
+                    original_digest,
+                )
+
     def test_missing_approval_identity_is_rejected(self) -> None:
         request = self._dispatch()
         self._write_approval(request, approval_artifact_sha256="")
+
+        state = self.consumer["_process"](self._consumer_config(), {})
+
+        self.assertEqual(state["processed_count"], 0)
+        self.assertEqual(state["pending_count"], 1)
+        self.assertEqual(
+            state["reason"],
+            f"invalid-approval-identity:{request['dispatch_id']}",
+        )
+        self.assertEqual(self._execution_records(), [])
+
+    def test_wrong_approval_version_can_be_corrected_and_retried(self) -> None:
+        request = self._dispatch()
+        self._write_approval(request, approval_payload_version=2)
+
+        state = self.consumer["_process"](self._consumer_config(), {})
+
+        self.assertEqual(state["processed_count"], 0)
+        self.assertEqual(state["pending_count"], 1)
+        self.assertEqual(
+            state["reason"],
+            f"invalid-approval-identity:{request['dispatch_id']}",
+        )
+        self.assertEqual(self._execution_records(), [])
+
+        self._write_approval(request)
+        retried = self.consumer["_process"](self._consumer_config(), state)
+
+        self.assertEqual(retried["processed_count"], 1)
+        self.assertEqual(retried["pending_count"], 0)
+        self.assertEqual(len(self._execution_records()), 1)
+
+    def test_approval_requires_audit_context(self) -> None:
+        request = self._dispatch()
+        self._write_approval(request, approved_by="")
+
+        state = self.consumer["_process"](self._consumer_config(), {})
+
+        self.assertEqual(state["processed_count"], 0)
+        self.assertEqual(state["pending_count"], 1)
+        self.assertEqual(
+            state["reason"],
+            f"invalid-approval-context:{request['dispatch_id']}",
+        )
+        self.assertEqual(self._execution_records(), [])
+
+        self._write_approval(request, approved_at="")
+        state = self.consumer["_process"](self._consumer_config(), state)
+
+        self.assertEqual(state["processed_count"], 0)
+        self.assertEqual(state["pending_count"], 1)
+        self.assertEqual(
+            state["reason"],
+            f"invalid-approval-context:{request['dispatch_id']}",
+        )
+        self.assertEqual(self._execution_records(), [])
+
+    def test_non_object_approval_is_rejected(self) -> None:
+        request = self._dispatch()
+        approval_path = self.approvals_dir / f"{request['dispatch_id']}.approved.json"
+        approval_path.parent.mkdir(parents=True, exist_ok=True)
+        approval_path.write_text("[]", encoding="utf-8")
 
         state = self.consumer["_process"](self._consumer_config(), {})
 
