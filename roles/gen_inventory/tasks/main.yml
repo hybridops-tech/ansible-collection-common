@@ -1,5 +1,5 @@
 ---
-# SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: Apache-2.0
 # purpose: Resolve project root, validate inputs, and load environment data for dynamic inventory
 # maintainer: HybridOps.Tech
 

@@ -1,5 +1,5 @@
 ---
-# SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: Apache-2.0
 # purpose: Environment guard audit trail and report generation
 # adr: ADR-0600-environment-guard-framework
 # maintainer: HybridOps.Tech

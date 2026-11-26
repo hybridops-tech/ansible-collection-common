@@ -59,7 +59,7 @@ Ansible automation, dynamic inventory, hybrid cloud, governance, security, compl
 
 🔗 Role: https://github.com/hybridops/gen_inventory
 🌐 Website: https://hybridops.tech
-📦 License: MIT-0
+📦 License: Apache-2.0
 
 #Ansible #DevSecOps #HybridCloud #Automation #HybridOpsTech
 

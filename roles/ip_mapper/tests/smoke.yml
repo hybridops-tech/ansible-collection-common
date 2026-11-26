@@ -1,5 +1,5 @@
 ---
-# SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: Apache-2.0
 # purpose: Smoke-test ip_mapper role; validate mapping and CID logging for a selected environment.
 # adr: ADR-0600-environment-guard-framework
 # maintainer: HybridOps.Tech
