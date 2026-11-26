@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- No unreleased changes yet.
+### Changed
+
+- Relicensed the collection from MIT-0 to Apache-2.0 and added the standard
+  distribution notice.
 
 ## [0.1.7] - 2026-09-12
 

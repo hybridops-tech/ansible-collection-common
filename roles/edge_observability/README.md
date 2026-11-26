@@ -76,5 +76,5 @@ Key inputs:
 
 ## License
 
-- Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)
+- Code: [Apache-2.0](https://spdx.org/licenses/Apache-2.0.html)
 - Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)

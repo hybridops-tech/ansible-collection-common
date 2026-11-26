@@ -3,7 +3,7 @@
 Connectivity validation across ICMP, SSH, Telnet, HTTP, and HTTPS.  
 Designed to integrate with the Environment Guard Framework (EGF) and produce structured results suitable for CI gates and reviewable run records.
 
-**License:** MIT-0 (code), CC BY 4.0 (docs)
+**License:** Apache-2.0 (code), CC BY 4.0 (docs)
 
 ---
 
@@ -228,7 +228,7 @@ When used from Ansible Galaxy, treat this README as the primary reference and us
 
 ## License
 
-- Code: [MIT-0](https://spdx.org/licenses/MIT-0.html)  
+- Code: [Apache-2.0](https://spdx.org/licenses/Apache-2.0.html)
 - Documentation & diagrams: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 See the [HybridOps licensing overview](https://docs.hybridops.tech/briefings/legal/licensing/)

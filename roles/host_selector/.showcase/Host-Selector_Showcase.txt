@@ -130,4 +130,4 @@ HASHTAGS
 • Governance inputs: validated_env, correlation_id
 • Test playbook: tests/test_role.yml
 
-License: MIT-0 — hybridops.tech
+License: Apache-2.0 — hybridops.tech

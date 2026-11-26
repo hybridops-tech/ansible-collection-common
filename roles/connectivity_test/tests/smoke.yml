@@ -1,5 +1,5 @@
 ---
-# SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: Apache-2.0
 # purpose: Smoke-test connectivity_test role against cicd_test inventory
 # adr: ADR-0600-environment-guard-framework
 # maintainer: HybridOps.Tech
