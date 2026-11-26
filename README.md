@@ -17,6 +17,9 @@ Role-level variables and assumptions are documented in each role's `README.md`. 
 | Role | Purpose |
 |------|---------|
 | `connectivity_test` | Connectivity checks with structured results. |
+| `decision_consumer` | Consume governed dispatch requests and publish completion evidence. |
+| `decision_dispatcher` | Bind approved requests to executable operations. |
+| `decision_executor` | Execute approved operations and record terminal state. |
 | `decision_service` | Deploy the decision service control-plane component. |
 | `dns_routing` | Publish and update internal DNS routing records. |
 | `docker_compose_stack` | Deploy Docker Compose based service stacks. |
@@ -78,3 +81,8 @@ collections:
 - Documentation: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 See the project licensing guidance at [docs.hybridops.tech](https://docs.hybridops.tech).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities through
+[SECURITY.md](SECURITY.md).
