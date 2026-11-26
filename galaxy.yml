@@ -55,8 +55,6 @@ build_ignore:
   - output
   - roles/*/.github
   - roles/*/.github/**
-  - roles/*/.showcase
-  - roles/*/.showcase/**
   - roles/*/tests/output
   - roles/*/tests/output/**
   - roles/*/tests/outputs
