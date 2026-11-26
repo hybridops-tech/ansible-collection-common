@@ -35,8 +35,8 @@ tags:
 
 homepage: https://hybridops.tech
 documentation: https://docs.hybridops.tech
-repository: https://galaxy.ansible.com/hybridops/common
-issues: https://hybridops.tech/contact
+repository: https://github.com/hybridops-tech/ansible-collection-common
+issues: https://github.com/hybridops-tech/ansible-collection-common/issues
 
 dependencies: {}
 

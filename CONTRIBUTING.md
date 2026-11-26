@@ -1,8 +1,7 @@
 # Contributing to `hybridops.common`
 
-`hybridops.common` provides shared plugins and utility roles used across the HybridOps.Tech platform (for example environment guards, connectivity checks, inventory helpers, and common baselines). Changes in this collection can affect CI and multiple dependent roles.
-
-Design and release context is maintained in the HybridOps.Tech documentation site.
+`hybridops.common` provides shared plugins and utility roles used across the
+HybridOps runtime. Changes can affect multiple collections and Core operations.
 
 ## Contribution scope
 
@@ -41,15 +40,8 @@ cd roles/<role_name>
 ansible-playbook -i tests/inventory.example.ini tests/smoke.yml
 ```
 
-Platform integration (via the harness):
-
-```bash
-# In galaxy-collections-harness
-make workspace.clone
-make collections.sync
-make venv.refresh
-make test ROLE=<role_name>
-```
+Changes that affect Core operations must also pass the relevant
+[`hybridops-core`](https://github.com/hybridops-tech/hybridops-core) checks.
 
 ### Pull requests
 
@@ -73,3 +65,6 @@ New or updated plugins should be documented and include a minimal usage example 
 - Do not commit secrets, tokens, or environment-specific endpoints.
 - Consume sensitive values via variables, Vault, or environment lookups.
 - Avoid logging sensitive values in debug output or task messages.
+
+Report vulnerabilities through the [security
+policy](SECURITY.md), not a public issue.
